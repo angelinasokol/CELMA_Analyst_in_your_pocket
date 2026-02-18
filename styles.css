@@ -19,37 +19,63 @@ body {
     flex-direction: column;
 }
 
+/* HEADER */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    padding: 25px 0;
 }
 
 .logo-icon {
-    height: 200px;
-    display: block;
+    height: 80px;
 }
 
-
-.menu-icon {
-    cursor: pointer;
+/* NAVIGATION */
+.nav {
     display: flex;
-    align-items: center;
+    gap: 25px;
 }
 
-.menu-icon-img {
-    width: 40px;
-    height: 40px;
-    display: block;
+.nav-link {
+    font-size: 16px;
     color: #2E2E2E;
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.2s;
 }
 
+.nav-link:hover {
+    opacity: 0.7;
+}
+
+/* TRY BUTTON */
+.try-btn {
+    padding: 12px 22px;
+    background-color: #2E2E2E;
+    color: #EDE7DA;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.try-btn:hover {
+    opacity: 0.8;
+}
+
+/* SECTIONS */
+.section {
+    padding: 80px 0;
+    border-bottom: 1px solid #d2c7b5;
+}
+
+.section h2 {
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+/* FOOTER */
 .footer {
     margin-top: auto;
     background-color: #D9CFB8;
@@ -63,34 +89,22 @@ body {
 
 .footer-left p {
     font-size: 13px;
-    color: #2E2E2E;
-    margin: 0;
-}
-
-.footer-center {
-    display: flex;
-    align-items: center;
-    gap: 10px;
 }
 
 .footer-logo {
-
-    height: 100px;
-    display: block;
+    height: 80px;
 }
 
 .footer-right {
     display: flex;
-    align-items: flex-start;
-    gap: 20px;
     flex-direction: column;
+    gap: 15px;
 }
 
 .footer-link {
     font-size: 13px;
     color: #2E2E2E;
     text-decoration: none;
-    transition: opacity 0.2s;
 }
 
 .footer-link:hover {
@@ -103,20 +117,7 @@ body {
     gap: 12px;
 }
 
-.social-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.2s;
-}
-
-.social-link:hover {
-    opacity: 0.7;
-}
-
 .social-link img {
     width: 40px;
     height: 40px;
-    display: block;
-    color: #2E2E2E;
 }
