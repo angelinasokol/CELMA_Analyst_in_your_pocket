@@ -28,21 +28,31 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: relative;
 }
 
-/* Центрируем логотип */
-.logo {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+/* ТРИ БЛОКА ХЭДЕРА */
+.header-left,
+.header-center,
+.header-right {
+    flex: 1; /* три равных контейнера */
+    display: flex;
+    align-items: center;
+}
+
+/* ЛЕВЫЙ БЛОК — ЛОГО ПО ЦЕНТРУ */
+.header-left {
+    justify-content: center;
 }
 
 .logo-icon {
     height: 150px;
 }
 
-/* NAVIGATION */
+/* ЦЕНТРАЛЬНЫЙ БЛОК — МЕНЮ ПО ЦЕНТРУ */
+.header-center {
+    justify-content: center;
+}
+
 .nav {
     display: flex;
     gap: 25px;
@@ -60,7 +70,11 @@ body {
     opacity: 0.7;
 }
 
-/* TRY BUTTON */
+/* ПРАВЫЙ БЛОК — КНОПКА */
+.header-right {
+    justify-content: center;
+}
+
 .try-btn {
     padding: 12px 22px;
     background-color: #2E2E2E;
