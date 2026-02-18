@@ -21,14 +21,25 @@ body {
 
 /* HEADER */
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding: 25px 0;
 }
 
+.header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+/* Центрируем логотип */
+.logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
 .logo-icon {
-    height: 80px;
+    height: 150px;
 }
 
 /* NAVIGATION */
