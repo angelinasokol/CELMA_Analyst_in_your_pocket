@@ -12,7 +12,7 @@ body {
 }
 
 .wrapper {
-    max-width: 1200px;
+    max-width: 1250px;
     margin: 0 auto;
     min-height: 100vh;
     display: flex;
@@ -20,7 +20,7 @@ body {
 }
 
 .header {
-    padding: 25px 0;
+    padding: 30px 0;
 }
 
 .header-inner {
@@ -32,7 +32,7 @@ body {
 .header-left,
 .header-center,
 .header-right {
-    flex: 1; /* три равных контейнера */
+    flex: 1; 
     display: flex;
     align-items: center;
 }
@@ -55,7 +55,7 @@ body {
 }
 
 .nav-link {
-    font-size: 16px;
+    font-size: 20px;
     color: #2E2E2E;
     text-decoration: none;
     font-weight: 500;
@@ -70,7 +70,7 @@ body {
 }
 
 .try-btn {
-    padding: 12px 22px;
+    padding: 18px 22px;
     background-color: #2E2E2E;
     color: #EDE7DA;
     border-radius: 10px;
@@ -96,7 +96,7 @@ body {
 .footer {
     margin-top: auto;
     background-color: #D9CFB8;
-    padding: 25px 30px;
+    padding: 10px 90px;
     border-radius: 20px 20px 0 0;
     display: flex;
     justify-content: space-between;
@@ -109,7 +109,7 @@ body {
 }
 
 .footer-logo {
-    height: 80px;
+    height: 50px;
 }
 
 .footer-right {
@@ -119,7 +119,6 @@ body {
 }
 
 .footer-link {
-    font-size: 13px;
     color: #2E2E2E;
     text-decoration: none;
 }
