@@ -230,7 +230,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 15px;
+    gap: 40px;
 }
 
 .footer-left p {
@@ -263,7 +263,6 @@ body {
 }
 
 .social-link img {
-    width: 40px;
-    height: 40px;
-    color:#2E2E2E;
+    width: 48px;
+    height: 48px;
 }
