@@ -56,22 +56,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const uploadStatus = document.getElementById("uploadStatus");
 
     if (!uploadCard || !fileInput) return;
-
-    /* =========================
-       Клик по карточке
-    ========================== */
     uploadCard.addEventListener("click", () => {
         fileInput.click();
     });
 
-    /* =========================
-       Выбор файла
-    ========================== */
     fileInput.addEventListener("change", handleFile);
-
-    /* =========================
-       Drag & Drop
-    ========================== */
     uploadCard.addEventListener("dragover", (e) => {
         e.preventDefault();
         uploadCard.classList.add("dragover");
@@ -96,20 +85,12 @@ document.addEventListener("DOMContentLoaded", () => {
             processFile(fileInput.files[0]);
         }
     }
-
-    /* =========================
-       Основная обработка
-    ========================== */
     function processFile(file) {
-
-        // Проверка размера (10MB)
         const maxSize = 10 * 1024 * 1024;
         if (file.size > maxSize) {
             uploadStatus.textContent = "Файл превышает 10 МБ";
             return;
         }
-
-        // Проверка формата
         const allowedExtensions = ["csv", "xlsx", "xml"];
         const extension = file.name.split(".").pop().toLowerCase();
 
@@ -119,8 +100,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         uploadStatus.textContent = "Файл загружен. Подготавливаем анализ...";
-
-        // Имитация обработки
         setTimeout(() => {
             window.location.href = "processing.html";
         }, 1000);
