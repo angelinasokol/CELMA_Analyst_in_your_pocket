@@ -22,6 +22,53 @@ body {
 .header {
     padding: 30px 0;
 }
+.app-header {
+    background: #D9CFB8;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 0 0 20px 20px;
+}
+
+.app-header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.report-name {
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.tariff-badge {
+    background: #2E2E2E;
+    color: #EDE7DA;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+.new-report-btn {
+    background: #2E2E2E;
+    color: #EDE7DA;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.profile-circle {
+    width: 40px;
+    height: 40px;
+    background: #2E2E2E;
+    color: #EDE7DA;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 .header-inner {
     display: flex;
@@ -93,19 +140,27 @@ body {
     margin-bottom: 20px;
 }
 
-.footer {
+footer {
+    width: 100%;
     margin-top: auto;
+    color: #736345;
     background-color: #D9CFB8;
-    padding: 10px 90px;
+    padding: 20px 90px;
     border-radius: 20px 20px 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 20px;
+}
+
+.footer-left {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .footer-left p {
     font-size: 13px;
+    margin: 0;
 }
 
 .footer-logo {
@@ -115,12 +170,15 @@ body {
 .footer-right {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    align-items: flex-end;
+    gap: 12px;
 }
 
 .footer-link {
-    color: #2E2E2E;
+    color: #736345;
     text-decoration: none;
+    font-size: 14px;
+    transition: 0.3s;
 }
 
 .footer-link:hover {
@@ -130,10 +188,17 @@ body {
 
 .socials {
     display: flex;
-    gap: 12px;
+    gap: 15px;
 }
 
 .social-link img {
     width: 40px;
     height: 40px;
+    filter: brightness(0) saturate(100%) invert(29%) sepia(12%) saturate(600%) hue-rotate(20deg) brightness(95%) contrast(90%);
+    transition: transform 0.3s;
 }
+
+.social-link img:hover {
+    transform: scale(1.1);
+}
+

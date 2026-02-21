@@ -5,34 +5,19 @@
     <title>CELMA — карманный аналитик</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style_addFile.css">
+    <script type="module" src="js/addFileJS.js"></script>
 </head>
 
 <body>
 
 <div class="wrapper">
 
-    <header class="header">
-        <div class="header-inner">
-
-            <div class="header-left">
-                <img src="images/logo-icon.png" alt="logo" class="logo-icon">
-            </div>
-
-            <div class="header-center">
-                <nav class="nav">
-                    <a href="#about" class="nav-link">О нас</a>
-                    <a href="#features" class="nav-link">Функции</a>
-                    <a href="#pricing" class="nav-link">Тарифы</a>
-                    <a href="#contacts" class="nav-link">Контакты</a>
-                </nav>
-            </div>
-
-            <div class="header-right">
-                <a href="#try" class="try-btn">Попробовать бесплатно</a>
-            </div>
-
+  <div class="wrapper">
+    <header class="processing-header">
+        <div class="processing-header-inner">
+            <img src="images/logo-icon.png" alt="CELMA" class="processing-logo">
         </div>
-    </header>
+    </header></div>
 
 
     <section class="upload-section">
@@ -53,6 +38,8 @@
                 Поддерживаются форматы: .csv .lsx .xml<br>
                 Максимальный размер файла: 10 МБ
             </div>
+            <input type="file" id="fileInput" class="file-input" accept=".csv,.xlsx,.xml">
+        <div class="upload-status" id="uploadStatus"></div>
         </div>
     </section>
 
@@ -132,50 +119,3 @@
 
 </body>
 </html>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const slides = document.querySelectorAll(".slide");
-    const dots = document.querySelectorAll(".dot");
-    const prevBtn = document.querySelector(".slider-arrow.prev");
-    const nextBtn = document.querySelector(".slider-arrow.next");
-    const currentSlideText = document.querySelector(".current-slide");
-    const totalSlidesText = document.querySelector(".total-slides");
-
-    let currentIndex = 0;
-    const totalSlides = slides.length;
-    totalSlidesText.textContent = totalSlides;
-
-    function showSlide(index) {
-        slides.forEach((slide, i) => {
-            slide.classList.toggle("active", i === index);
-        });
-        dots.forEach((dot, i) => {
-            dot.classList.toggle("active", i === index);
-        });
-        currentSlideText.textContent = index + 1;
-    }
-
-    function nextSlide() {
-        currentIndex = (currentIndex + 1) % totalSlides;
-        showSlide(currentIndex);
-    }
-
-    function prevSlide() {
-        currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
-        showSlide(currentIndex);
-    }
-
-    nextBtn.addEventListener("click", nextSlide);
-    prevBtn.addEventListener("click", prevSlide);
-
-    dots.forEach(dot => {
-        dot.addEventListener("click", () => {
-            currentIndex = parseInt(dot.dataset.index);
-            showSlide(currentIndex);
-        });
-    });
-
-    showSlide(currentIndex);
-});
-</script>
