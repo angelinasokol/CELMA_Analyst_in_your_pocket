@@ -4,7 +4,7 @@ from app.api import upload, analytics, auth
 
 app = FastAPI(title="Analytics API")
 
-# ← Middleware добавляем СРАЗУ после создания app
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,12 +13,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ← Потом подключаем роутеры
-app.include_router(upload.router)
-app.include_router(analytics.router)
-app.include_router(auth.router)
+# Подключаем роутеры с префиксами
+app.include_router(upload.router, prefix="/upload")
+app.include_router(analytics.router, prefix="/analytics")
+app.include_router(auth.router, prefix="/auth")
 
-# ← И в конце — обычные маршруты
+# Корневой маршрут
 @app.get("/")
 def root():
     return {"message": "API is running 🚀"}
