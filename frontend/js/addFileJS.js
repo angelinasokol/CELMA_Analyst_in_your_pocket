@@ -51,12 +51,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!uploadCard || !fileInput) return;
     
-    uploadCard.addEventListener("click", () => {
+    // Клик по карточке
+    uploadCard.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         fileInput.click();
     });
 
-    fileInput.addEventListener("change", handleFile);
-    
+    // Выбор файла
+    fileInput.addEventListener("change", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleFile();
+    });
     uploadCard.addEventListener("dragover", (e) => {
         e.preventDefault();
         uploadCard.classList.add("dragover");
@@ -146,12 +153,8 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("💾 Сохранено в sessionStorage");
             uploadStatus.textContent = "✅ Готово! Переходим...";
             
-            // 🔥 ШАГ 4: Редирект (БЕЗ alert!)
-            // Небольшая задержка, чтобы пользователь увидел статус
-            setTimeout(() => {
-                window.location.href = "dashboard.html";
-            }, 300);
             
+            window.location.href = "processing.html";
         } catch (error) {
             console.error("❌ Ошибка:", error);
             uploadStatus.textContent = "❌ " + error.message;
