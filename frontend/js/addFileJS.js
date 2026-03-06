@@ -1,183 +1,132 @@
-// ✅ 1. URL БЕЗ пробелов в конце!
-const API_URL = "https://friendly-halibut-rjpgrj4pvqq24g4-8000.app.github.dev";
-
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("🚀 Скрипт загружен, начинаем инициализацию...");
-
-    // 🔥 2. ЖЕСТКАЯ БЛОКИРОВКА ВСЕХ ФОРМ НА СТРАНИЦЕ
-    // Это предотвращает перезагрузку страницы при клике
-    document.querySelectorAll('form').forEach(form => {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log("🚫 Форма заблокирована (preventDefault)");
-            return false;
-        });
-        form.setAttribute('onsubmit', 'return false;');
-    });
+    console.log("🚀 DOM загружен. Инициализация CELMA...");
 
     const uploadCard = document.querySelector(".upload-card");
     const fileInput = document.getElementById("fileInput");
+    const browseBtn = document.getElementById("browseBtn"); // Новая кнопка
     const uploadStatus = document.getElementById("uploadStatus");
 
     if (!uploadCard || !fileInput) {
-        console.error("❌ ОШИБКА: Не найдены элементы uploadCard или fileInput в HTML");
+        console.error("❌ ОШИБКА: Основные элементы не найдены!");
         return;
     }
 
-    // --- Обработчик клика по карточке ---
-    uploadCard.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log("👆 Клик по карточке, открываем выбор файла");
-        fileInput.click();
+    // Блокировка форм
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', (e) => { e.preventDefault(); e.stopPropagation(); return false; });
+        form.setAttribute('onsubmit', 'return false;');
     });
 
-    // --- Обработчик выбора файла через input ---
+    // --- ОБРАБОТЧИКИ КЛИКОВ ---
+    
+    // 1. Клик по всей карточке
+    if (uploadCard) {
+        uploadCard.addEventListener("click", (e) => {
+            // Если клик был не по кнопке и не по инпуту, то открываем выбор файла
+            if (e.target !== browseBtn && e.target !== fileInput) {
+                console.log("👆 Клик по карточке");
+                fileInput.click();
+            }
+        });
+    }
+
+    // 2. Клик по новой кнопке "Browse File"
+    if (browseBtn) {
+        browseBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("🖱️ Клик по кнопке Browse File");
+            fileInput.click();
+        });
+    }
+
+    // 3. Выбор файла (САМОЕ ВАЖНОЕ СОБЫТИЕ)
     fileInput.addEventListener("change", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log("📁 Файл выбран через input:", fileInput.files[0]?.name);
+        console.log("📁 СОБЫТИЕ CHANGE СРАБОТАЛО!");
+        console.log("📁 Выбрано файлов:", fileInput.files.length);
         
         if (fileInput.files.length > 0) {
-            processFile(fileInput.files[0]);
+            const file = fileInput.files[0];
+            console.log("📄 Имя файла:", file.name, "Размер:", file.size);
+            processFile(file);
         } else {
-            console.warn("⚠️ Файл не выбран");
+            console.warn("⚠️ Файл не выбран (возможно, отмена в диалоге)");
         }
-    });
-
-    // --- Drag & Drop: Наведение ---
-    uploadCard.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        uploadCard.classList.add("dragover");
-        console.log("📂 Drag over (наведение)");
-    });
-
-    // --- Drag & Drop: Уход ---
-    uploadCard.addEventListener("dragleave", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        uploadCard.classList.remove("dragover");
-        console.log("📂 Drag leave (уход)");
-    });
-
-    // --- Drag & Drop: Сброс файла ---
-    uploadCard.addEventListener("drop", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        uploadCard.classList.remove("dragover");
         
-        console.log("📂 Drop event (сброс)");
-        
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            console.log("✅ Файл получен через Drag-Drop:", files[0].name);
-            processFile(files[0]);
-        } else {
-            console.warn("⚠️ В drop нет файлов");
-        }
+        // Сбрасываем значение, чтобы можно было выбрать тот же файл снова
+        fileInput.value = ''; 
     });
 
-    // ==========================================
-    // ОСНОВНАЯ ФУНКЦИЯ ОБРАБОТКИ
-    // ==========================================
+    // Drag & Drop
+    if (uploadCard) {
+        uploadCard.addEventListener("dragover", (e) => { e.preventDefault(); uploadCard.classList.add("dragover"); });
+        uploadCard.addEventListener("dragleave", (e) => { e.preventDefault(); uploadCard.classList.remove("dragover"); });
+        uploadCard.addEventListener("drop", (e) => {
+            e.preventDefault();
+            uploadCard.classList.remove("dragover");
+            if (e.dataTransfer.files.length) {
+                console.log("📂 Файл получен через Drag-Drop");
+                processFile(e.dataTransfer.files[0]);
+            }
+        });
+    }
+
+    // --- ФУНКЦИЯ ЗАГРУЗКИ ---
     async function processFile(file) {
-        console.log("🚀 [processFile] Запуск обработки файла:", file.name);
-        
-        // 1. Проверка размера (макс 10 МБ)
-        const maxSize = 10 * 1024 * 1024;
-        if (file.size > maxSize) {
-            const msg = "❌ Файл слишком большой (>10 МБ)";
-            console.error(msg);
-            uploadStatus.textContent = msg;
-            return;
-        }
-        
-        // 2. Проверка расширения
-        const ext = file.name.split(".").pop().toLowerCase();
-        const allowed = ["csv", "xlsx", "xml"];
-        
-        if (!allowed.includes(ext)) {
-            const msg = "❌ Недопустимый формат (разрешены: .csv, .xlsx, .xml)";
-            console.error(msg);
-            uploadStatus.textContent = msg;
-            return;
-        }
+        console.log("⚙️ [processFile] Старт обработки");
+        if (uploadStatus) uploadStatus.textContent = "📤 Загрузка...";
 
-        console.log("✅ Проверки пройдены. Начинаем загрузку...");
-        uploadStatus.textContent = "📤 Загружаем файл на сервер...";
-        
         try {
-            // Подготовка данных
+            // ✅ ИСПРАВЛЕНО: Убраны пробелы в конце URL!
+            const API_URL = "https://friendly-halibut-rjpgrj4pvqq24g4-8000.app.github.dev";
+            
             const formData = new FormData();
             formData.append("file", file);
+
+            console.log("📡 Отправка запроса на:", API_URL + "/upload/");
+            const response = await fetch(`${API_URL}/upload/`, { method: "POST", body: formData });
             
-            const targetUrl = `${API_URL}/upload/`;
-            console.log("📡 Отправка POST запроса на:", targetUrl);
-            
-            // ЗАПРОС К СЕРВЕРУ
-            const response = await fetch(targetUrl, {
-                method: "POST",
-                body: formData
-                // Заголовки Content-Type ставить не нужно, браузер сам ставит multipart/form-data
-            });
-            
-            console.log("📥 Получен ответ от сервера. Статус:", response.status, "OK:", response.ok);
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Ошибка сервера ${response.status}: ${errorText}`);
-            }
-            
-            const result = await response.json();
-            console.log("✅ Успех! Данные от сервера:", result);
-            
-            // Сохранение ID файла
-            const fileId = result.file_id;
-            if (!fileId) {
-                throw new Error("Сервер не вернул file_id");
+            console.log("📥 Ответ сервера:", response.status);
+            if (!response.ok) throw new Error(`Ошибка сервера: ${response.status}`);
+
+            const data = await response.json();
+            console.log("✅ Данные получены:", data);
+
+            sessionStorage.setItem("celma_file_id", data.file_id);
+            sessionStorage.setItem("celma_analytics", JSON.stringify(data));
+
+            if (uploadStatus) {
+                uploadStatus.textContent = "✅ Готово! Переходим...";
+                uploadStatus.style.color = "#2E7D32"; // Зеленый цвет успеха
             }
 
-            uploadStatus.textContent = "📊 Анализ данных...";
-            
-            // Сохраняем в sessionStorage для следующей страницы
-            sessionStorage.setItem('celma_file_id', fileId);
-            sessionStorage.setItem('celma_analytics', JSON.stringify(result));
-            console.log("💾 Данные сохранены в sessionStorage");
-            
-            // ==========================================
-            // РЕДИРЕКТ
-            // ==========================================
-            uploadStatus.textContent = "✅ Готово! Перенаправляем...";
-            
-            console.log("⏳ Таймер редиректа запущен (500 мс)...");
-            
+            // 🔥 НАДЕЖНЫЙ РЕДИРЕКТ (вставлено сюда)
             setTimeout(() => {
-                console.log("⏰ Таймер сработал. Текущий URL:", window.location.href);
-                console.log("🔄 Выполняем переход на processing.html");
+                console.log("⏰ Таймер истек. Выполняем переход...");
                 
-                // Используем replace, чтобы нельзя было вернуться кнопкой "Назад" на эту же страницу с файлом
-                window.location.replace("processing.html");
-                
-                // Если replace не сработает (редко), пробуем href
-                // window.location.href = "processing.html"; 
-            }, 500);
-            
+                try {
+                    // Способ 1: replace (лучший вариант)
+                    window.location.replace("processing.html");
+                    
+                    // Страховка: если через 100мс мы все еще на этой странице
+                    setTimeout(() => {
+                        if (window.location.href.indexOf("processing") === -1) {
+                            console.log("⚠️ replace не сработал, пробуем href...");
+                            window.location.href = "processing.html";
+                        }
+                    }, 100);
+                } catch (e) {
+                    console.error("❌ Ошибка редиректа:", e);
+                    window.location.href = "processing.html";
+                }
+            }, 1000); // Ждем 1 секунду для надежности
+
         } catch (error) {
-            console.error("💥 КРИТИЧЕСКАЯ ОШИБКА в processFile:", error);
-            console.error("Stack trace:", error.stack);
-            
-            let errorMsg = "❌ Произошла неизвестная ошибка";
-            if (error.message) {
-                errorMsg = "❌ " + error.message;
+            console.error("💥 Ошибка:", error);
+            if (uploadStatus) {
+                uploadStatus.textContent = "❌ " + error.message;
+                uploadStatus.style.color = "#d32f2f"; // Красный цвет ошибки
             }
-            // Если ошибка сетевая (Failed to fetch)
-            if (error.message.includes("Failed to fetch") || error.message.includes("fetch")) {
-                errorMsg = "❌ Нет связи с сервером. Проверьте консоль и подключение.";
-            }
-            
-            uploadStatus.textContent = errorMsg;
         }
     }
 });

@@ -225,6 +225,28 @@ footer {
 .file-input {
     display: none;
 }
+/* Стили для красивой кнопки */
+.browse-btn {
+    background-color: #2E2E2E; /* Темный фон */
+    color: #ffffff;            /* Белый текст */
+    border: none;              /* Убираем рамку */
+    padding: 12px 24px;        /* Отступы внутри */
+    font-size: 16px;           /* Размер шрифта */
+    font-weight: 600;          /* Жирный шрифт */
+    border-radius: 8px;        /* Закругленные углы */
+    cursor: pointer;           /* Курсор-рука при наведении */
+    transition: background 0.3s; /* Плавное изменение цвета */
+    margin: 15px 0;            /* Отступ сверху и снизу */
+    display: inline-block;     /* Чтобы работали отступы */
+}
+
+.browse-btn:hover {
+    background-color: #4a4a4a; /* Цвет при наведении */
+}
+
+.browse-btn:active {
+    transform: scale(0.98);    /* Эффект нажатия */
+}
 
 .upload-card {
     cursor: pointer;
