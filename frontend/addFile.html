@@ -5,33 +5,330 @@
     <title>CELMA — карманный аналитик</title>
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style_addFile.css">
-    <!-- Убрали подключение внешнего скрипта, так как код теперь встроен -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #EDE7DA;
+            color: #2E2E2E;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Хедер */
+        .processing-header {
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .processing-logo {
+            height: 60px;
+        }
+
+        /* Секция загрузки */
+        .upload-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 0;
+        }
+
+        .upload-card {
+            background-color: #D9CFB8;
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 2px dashed transparent;
+        }
+
+        .upload-card.dragover {
+            border-color: #2E2E2E;
+            background-color: #c9bfa8;
+            transform: scale(1.02);
+        }
+
+        .upload-title {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 30px;
+            color: #2E2E2E;
+        }
+
+        .cloud-icon {
+            margin: 20px 0;
+        }
+
+        .cloud-icon-img {
+            width: 80px;
+            height: auto;
+            opacity: 0.7;
+        }
+
+        .upload-divider {
+            height: 1px;
+            background: rgba(46,46,46,0.2);
+            margin: 30px 0;
+            width: 100%;
+        }
+
+        .browse-btn {
+            background-color: #2E2E2E;
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 20px;
+            border: 1px solid #2E2E2E;
+        }
+
+        .browse-btn:hover {
+            background-color: #4a4a4a;
+        }
+
+        .upload-info {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-status {
+            margin-top: 20px;
+            font-size: 15px;
+            font-weight: 500;
+            min-height: 24px;
+        }
+
+        /* Секция результата (слайдер) */
+        .result-section {
+            padding: 40px 0 60px;
+        }
+
+        .result-title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 40px;
+            letter-spacing: 1px;
+            color: #2E2E2E;
+        }
+
+        .slider-container {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .slider {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .result-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .slider-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 48px;
+            height: 48px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .slider-arrow:hover {
+            background: #f0f0f0;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .slider-arrow.prev {
+            left: -60px;
+        }
+
+        .slider-arrow.next {
+            right: -60px;
+        }
+
+        .slider-arrow img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .slider-dots {
+            display: flex;
+            justify-content: center;
+            margin-top: 25px;
+            gap: 12px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #aaa;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .dot.active {
+            background: #2E2E2E;
+            transform: scale(1.3);
+        }
+
+        .slide-counter {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 16px;
+            color: #555;
+        }
+
+        /* Футер */
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 0;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-left p {
+            color: #555;
+            font-size: 14px;
+        }
+
+        .footer-center .footer-logo {
+            height: 40px;
+            opacity: 0.7;
+        }
+
+        .footer-right {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: #2E2E2E;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+
+        .socials {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-link img {
+            width: 24px;
+            height: 24px;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .social-link:hover img {
+            opacity: 1;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 900px) {
+            .slider-arrow.prev { left: -20px; }
+            .slider-arrow.next { right: -20px; }
+        }
+
+        @media (max-width: 600px) {
+            .slider-arrow { width: 36px; height: 36px; }
+            .slider-arrow.prev { left: 5px; }
+            .slider-arrow.next { right: 5px; }
+            .result-title { font-size: 24px; }
+            .footer { flex-direction: column; text-align: center; }
+        }
+    </style>
 </head>
 <body>
-
 <div class="wrapper">
 
     <header class="processing-header">
-        <div class="processing-header-inner">
-            <img src="images/logo-icon.png" alt="CELMA" class="processing-logo">
-        </div>
+        <img src="images/logo-icon.png" alt="CELMA" class="processing-logo">
     </header>
 
     <section class="upload-section">
         <div class="upload-card">
-            <h2 class="upload-title">
-                Перетащите файл сюда или нажмите, чтобы выбрать файл
-            </h2>
-
+            <h2 class="upload-title">Перетащите файл сюда или нажмите, чтобы выбрать файл</h2>
             <div class="cloud-icon">
                 <img src="images/cloud-icon.png" alt="Upload" class="cloud-icon-img">
             </div>
-
             <div class="upload-divider"></div>
-
             <button type="button" id="browseBtn" class="browse-btn">Browse File</button>
-
             <div class="upload-info">
                 Поддерживаются форматы: .csv .xlsx .xml<br>
                 Максимальный размер файла: 10 МБ
@@ -66,7 +363,6 @@
             <button class="slider-arrow prev" aria-label="Предыдущий пример">
                 <img src="images/arrow-left.png" alt="Previous">
             </button>
-            
             <button class="slider-arrow next" aria-label="Следующий пример">
                 <img src="images/arrow-right.png" alt="Next">
             </button>
@@ -89,253 +385,210 @@
         <div class="footer-left">
             <p>© 2026 Celma Все права защищены.</p>
         </div>
-
         <div class="footer-center">
             <img src="images/logo-icon.png" alt="" class="footer-logo">
         </div>
-
         <div class="footer-right">
             <a href="#" class="footer-link">Конфиденциальность</a>
             <a href="#" class="footer-link">Условия</a>
-
             <div class="socials">
-                <a href="#" class="social-link" aria-label="Telegram">
-                    <img src="images/tg-icon.png" alt="">
-                </a>
-                <a href="#" class="social-link" aria-label="VK">
-                    <img src="images/vk-icon.png" alt="">
-                </a>
-                <a href="#" class="social-link" aria-label="Mail">
-                    <img src="images/gmail-icon.png" alt="">
-                </a>
+                <a href="#" class="social-link" aria-label="Telegram"><img src="images/tg-icon.png" alt=""></a>
+                <a href="#" class="social-link" aria-label="VK"><img src="images/vk-icon.png" alt=""></a>
+                <a href="#" class="social-link" aria-label="Mail"><img src="images/gmail-icon.png" alt=""></a>
             </div>
         </div>
     </footer>
-
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("🚀 DOM загружен. Инициализация CELMA...");
+    (function() {
+        // === СЛАЙДЕР ===
+        function initSlider() {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.querySelector('.slider-arrow.prev');
+            const nextBtn = document.querySelector('.slider-arrow.next');
+            const dots = document.querySelectorAll('.dot');
+            const currentSpan = document.querySelector('.current-slide');
+            const totalSpan = document.querySelector('.total-slides');
 
-    // ==================== СЛАЙДЕР ====================
-    initSlider();
+            if (!slides.length || !prevBtn || !nextBtn) return;
 
-    // ==================== ЗАГРУЗКА ФАЙЛОВ ====================
-    const uploadCard = document.querySelector(".upload-card");
-    const fileInput = document.getElementById("fileInput");
-    const browseBtn = document.getElementById("browseBtn");
-    const uploadStatus = document.getElementById("uploadStatus");
+            let currentIndex = 0;
+            const totalSlides = slides.length;
+            if (totalSpan) totalSpan.textContent = totalSlides;
 
-    if (!uploadCard || !fileInput) return;
-
-    // Блокировка отправки форм
-    document.querySelectorAll('form').forEach(form => {
-        form.addEventListener('submit', (e) => { e.preventDefault(); return false; });
-    });
-
-    // Клик по карточке (но не по кнопке и не по input)
-    uploadCard.addEventListener("click", (e) => {
-        if (e.target !== browseBtn && e.target !== fileInput) {
-            fileInput.click();
-        }
-    });
-
-    // Клик по кнопке Browse
-    if (browseBtn) {
-        browseBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            fileInput.click();
-        });
-    }
-
-    // Drag & Drop
-    uploadCard.addEventListener("dragover", (e) => { 
-        e.preventDefault(); 
-        uploadCard.classList.add("dragover"); 
-    });
-    uploadCard.addEventListener("dragleave", (e) => { 
-        e.preventDefault(); 
-        uploadCard.classList.remove("dragover"); 
-    });
-    uploadCard.addEventListener("drop", (e) => {
-        e.preventDefault();
-        uploadCard.classList.remove("dragover");
-        if (e.dataTransfer.files.length) {
-            handleFile(e.dataTransfer.files[0]);
-        }
-    });
-
-    // Выбор файла через input
-    fileInput.addEventListener("change", (e) => {
-        if (fileInput.files.length > 0) {
-            handleFile(fileInput.files[0]);
-        }
-        fileInput.value = ''; // позволяем выбрать тот же файл повторно
-    });
-
-    // Функция проверки и отправки файла
-    async function handleFile(file) {
-        // Проверка размера (10 МБ = 10 * 1024 * 1024 байт)
-        const maxSize = 10 * 1024 * 1024;
-        if (file.size > maxSize) {
-            showStatus("❌ Файл слишком большой. Максимум 10 МБ.", "#d32f2f");
-            return;
-        }
-
-        // Проверка расширения (на всякий случай, хотя accept уже работает)
-        const allowedExtensions = ['.csv', '.xlsx', '.xml'];
-        const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-        if (!allowedExtensions.includes(ext)) {
-            showStatus("❌ Неподдерживаемый формат. Используйте .csv, .xlsx или .xml.", "#d32f2f");
-            return;
-        }
-
-        showStatus("📤 Загрузка файла...", "#2196F3");
-
-        try {
-            // Попытка отправить на реальный API
-            const API_URL = "https://friendly-halibut-rjpgrj4pvqq24g4-8000.app.github.dev"; // замените на ваш актуальный URL
-            const response = await fetch(`${API_URL}/upload/`, {
-                method: "POST",
-                body: (() => {
-                    const fd = new FormData();
-                    fd.append("file", file);
-                    return fd;
-                })()
-            });
-
-            if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
-
-            const uploadResult = await response.json();
-            const fileId = uploadResult.file_id;
-            console.log("✅ Файл загружен, ID:", fileId);
-
-            showStatus("🧠 Нейросеть анализирует...", "#FF9800");
-
-            // Запрос аналитики
-            const analyticsResponse = await fetch(`${API_URL}/analytics/${fileId}`, { method: "POST" });
-            let fullData;
-            if (!analyticsResponse.ok) {
-                console.warn("⚠️ Аналитика не удалась, используем базовые данные");
-                fullData = uploadResult; // минимум данных
-            } else {
-                fullData = await analyticsResponse.json();
-                console.log("📊 Полные данные аналитики получены:", fullData);
+            function updateSlider() {
+                slides.forEach((slide, idx) => {
+                    slide.classList.toggle('active', idx === currentIndex);
+                });
+                dots.forEach((dot, idx) => {
+                    dot.classList.toggle('active', idx === currentIndex);
+                });
+                if (currentSpan) currentSpan.textContent = currentIndex + 1;
             }
 
-            fullData.filename = file.name; // добавим имя файла
-            sessionStorage.setItem("celma_file_id", fileId);
-            sessionStorage.setItem("celma_analytics", JSON.stringify(fullData));
-
-            showStatus("✅ Готово! Переходим...", "#2E7D32");
-
-            setTimeout(() => {
-                window.location.href = "processing.html";
-            }, 800);
-
-        } catch (error) {
-            console.error("💥 Ошибка:", error);
-            // Эмуляция для тестирования интерфейса (если API недоступен)
-            if (confirm("Не удалось связаться с сервером. Загрузить демо-данные для теста?")) {
-                emulateSuccessUpload(file.name);
-            } else {
-                showStatus("❌ " + error.message, "#d32f2f");
-            }
-        }
-    }
-
-    function showStatus(text, color) {
-        if (uploadStatus) {
-            uploadStatus.textContent = text;
-            uploadStatus.style.color = color;
-        }
-    }
-
-    // Эмуляция успешной загрузки (для офлайн-теста)
-    function emulateSuccessUpload(filename) {
-        showStatus("🧪 Тестовый режим: генерация демо-данных...", "#FF9800");
-        setTimeout(() => {
-            const mockData = {
-                filename: filename,
-                file_id: "test_123",
-                summary: "Это демо-аналитика. Файл не был отправлен на сервер.",
-                charts: ["chart1", "chart2"],
-                forecast: { next_month: 12345 }
-            };
-            sessionStorage.setItem("celma_file_id", mockData.file_id);
-            sessionStorage.setItem("celma_analytics", JSON.stringify(mockData));
-            showStatus("✅ Демо-данные готовы. Переходим...", "#2E7D32");
-            setTimeout(() => {
-                window.location.href = "processing.html";
-            }, 800);
-        }, 1500);
-    }
-
-    // ==================== ФУНКЦИИ СЛАЙДЕРА ====================
-    function initSlider() {
-        const slides = document.querySelectorAll('.slide');
-        const prevBtn = document.querySelector('.slider-arrow.prev');
-        const nextBtn = document.querySelector('.slider-arrow.next');
-        const dots = document.querySelectorAll('.dot');
-        const currentSpan = document.querySelector('.current-slide');
-        const totalSpan = document.querySelector('.total-slides');
-
-        if (!slides.length || !prevBtn || !nextBtn) return;
-
-        let currentIndex = 0;
-        const totalSlides = slides.length;
-
-        if (totalSpan) totalSpan.textContent = totalSlides;
-
-        function updateSlider() {
-            slides.forEach((slide, idx) => {
-                slide.classList.toggle('active', idx === currentIndex);
-            });
-            dots.forEach((dot, idx) => {
-                dot.classList.toggle('active', idx === currentIndex);
-            });
-            if (currentSpan) currentSpan.textContent = currentIndex + 1;
-        }
-
-        function nextSlide() {
-            currentIndex = (currentIndex + 1) % totalSlides;
-            updateSlider();
-        }
-
-        function prevSlide() {
-            currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
-            updateSlider();
-        }
-
-        function goToSlide(index) {
-            if (index >= 0 && index < totalSlides) {
-                currentIndex = index;
+            function nextSlide() {
+                currentIndex = (currentIndex + 1) % totalSlides;
                 updateSlider();
             }
+
+            function prevSlide() {
+                currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+                updateSlider();
+            }
+
+            function goToSlide(index) {
+                if (index >= 0 && index < totalSlides) {
+                    currentIndex = index;
+                    updateSlider();
+                }
+            }
+
+            nextBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                nextSlide();
+            });
+
+            prevBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                prevSlide();
+            });
+
+            dots.forEach((dot, idx) => {
+                dot.addEventListener('click', () => goToSlide(idx));
+            });
+
+            updateSlider();
         }
 
-        // Обработчики
-        nextBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            nextSlide();
-        });
+        // === ЗАГРУЗКА ФАЙЛОВ ===
+        function initFileUpload() {
+            const uploadCard = document.querySelector(".upload-card");
+            const fileInput = document.getElementById("fileInput");
+            const browseBtn = document.getElementById("browseBtn");
+            const uploadStatus = document.getElementById("uploadStatus");
 
-        prevBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            prevSlide();
-        });
+            if (!uploadCard || !fileInput) return;
 
-        dots.forEach((dot, idx) => {
-            dot.addEventListener('click', () => goToSlide(idx));
-        });
+            // Блокировка всех форм (на случай, если они появятся)
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', (e) => e.preventDefault());
+            });
 
-        // Автоматическая инициализация
-        updateSlider();
-    }
-});
+            // Клик по карточке (но не по кнопке и не по input)
+            uploadCard.addEventListener("click", (e) => {
+                if (e.target !== browseBtn && e.target !== fileInput) {
+                    fileInput.click();
+                }
+            });
+
+            if (browseBtn) {
+                browseBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    fileInput.click();
+                });
+            }
+
+            // Drag & Drop
+            uploadCard.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                uploadCard.classList.add("dragover");
+            });
+            uploadCard.addEventListener("dragleave", (e) => {
+                e.preventDefault();
+                uploadCard.classList.remove("dragover");
+            });
+            uploadCard.addEventListener("drop", (e) => {
+                e.preventDefault();
+                uploadCard.classList.remove("dragover");
+                if (e.dataTransfer.files.length) {
+                    handleFile(e.dataTransfer.files[0]);
+                }
+            });
+
+            fileInput.addEventListener("change", (e) => {
+                if (fileInput.files.length > 0) {
+                    handleFile(fileInput.files[0]);
+                }
+                fileInput.value = '';
+            });
+
+            async function handleFile(file) {
+                const maxSize = 10 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    showStatus("❌ Файл слишком большой. Максимум 10 МБ.", "#d32f2f");
+                    return;
+                }
+
+                const allowed = ['.csv', '.xlsx', '.xml'];
+                const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+                if (!allowed.includes(ext)) {
+                    showStatus("❌ Неподдерживаемый формат. Используйте .csv, .xlsx или .xml.", "#d32f2f");
+                    return;
+                }
+
+                showStatus("📤 Загрузка файла...", "#2196F3");
+
+                try {
+                    // ⚠️ ЗАМЕНИТЕ НА ВАШ АКТУАЛЬНЫЙ API_URL
+                    const API_URL = "https://friendly-halibut-rjpgrj4pvqq24g4-8000.app.github.dev";
+
+                    const formData = new FormData();
+                    formData.append("file", file);
+
+                    const uploadResponse = await fetch(`${API_URL}/upload/`, {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    if (!uploadResponse.ok) throw new Error(`Ошибка HTTP: ${uploadResponse.status}`);
+
+                    const uploadResult = await uploadResponse.json();
+                    const fileId = uploadResult.file_id;
+                    console.log("✅ Файл загружен, ID:", fileId);
+
+                    sessionStorage.setItem("celma_file_id", fileId);
+                    showStatus("✅ Файл принят! Запускаем анализ...", "#2E7D32");
+
+                    // Переход на страницу обработки
+                    setTimeout(() => {
+                        window.location.href = "processing.html";
+                    }, 500);
+
+                } catch (error) {
+                    console.error("💥 Ошибка:", error);
+                    if (confirm("Не удалось связаться с сервером. Использовать демо-режим?")) {
+                        emulateSuccessUpload(file.name);
+                    } else {
+                        showStatus("❌ " + error.message, "#d32f2f");
+                    }
+                }
+            }
+
+            function showStatus(text, color) {
+                if (uploadStatus) {
+                    uploadStatus.textContent = text;
+                    uploadStatus.style.color = color;
+                }
+            }
+
+            function emulateSuccessUpload(filename) {
+                const mockFileId = "demo_" + Date.now();
+                sessionStorage.setItem("celma_file_id", mockFileId);
+                showStatus("🧪 Демо-режим: файл не отправлен, но анализ будет показан", "#FF9800");
+                setTimeout(() => {
+                    window.location.href = "processing.html";
+                }, 800);
+            }
+        }
+
+        // Запуск всего после загрузки DOM
+        document.addEventListener("DOMContentLoaded", () => {
+            initSlider();
+            initFileUpload();
+        });
+    })();
 </script>
-
 </body>
 </html>
