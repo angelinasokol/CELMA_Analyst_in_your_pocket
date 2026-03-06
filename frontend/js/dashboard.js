@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("📊 Инициализация дашборда...");
-
     const rawData = sessionStorage.getItem('celma_analytics');
     
     if (!rawData) {
@@ -10,72 +8,120 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const data = JSON.parse(rawData);
-    console.log("✅ Данные получены:", data);
+    console.log("🤖 ML Данные получены:", data);
 
-    // 1. Заполняем KPI реальными числами
-    document.getElementById('reportTitle').textContent = `Отчёт: ${data.filename || 'Без названия'}`;
-    document.getElementById('kpiRows').textContent = data.rows || 0;
-    document.getElementById('kpiCols').textContent = data.columns ? data.columns.length : 0;
-
-    // 2. Строим график на основе РЕАЛЬНЫХ данных из ответа бэкенда
-    buildRealChart(data);
+    // 1. Заполняем KPI реальными ML-метриками
+    document.getElementById('reportTitle').textContent = `Отчёт: ${data.filename || 'Анализ'}`;
+    document.getElementById('kpiRows').textContent = data.rows;
+    document.getElementById('kpiCols').textContent = data.columns.length;
     
-    // 3. Генерируем инсайт на основе реальных цифр
-    generateRealInsight(data);
+    // Обновляем карточки KPI (предполагаем, что их 3 штуки в HTML)
+    const kpiValues = document.querySelectorAll('.kpi-value');
+    const kpiDescs = document.querySelectorAll('.kpi-desc');
+    
+    if(kpiValues.length >= 3 && kpiDescs.length >= 3) {
+        kpiValues[0].textContent = data.rows; // Строки
+        kpiDescs[0].textContent = "Записей в отчете";
+        
+        kpiValues[1].textContent = data.target_metric ? data.target_metric.substring(0, 15) + "..." : "Метрика"; // Название метрики (обрезаем если длинное)
+        kpiDescs[1].textContent = "Целевой показатель";
+        
+        // Прогноз
+        const forecastVal = Math.round(data.summary?.forecast_next_month || 0);
+        kpiValues[2].textContent = forecastVal.toLocaleString('ru-RU'); 
+        kpiDescs[2].textContent = "Прогноз на след. период";
+    }
+
+    // 2. Строим ПРОФЕССИОНАЛЬНЫЙ график (История + Прогноз)
+    buildMLChart(data);
+    
+    // 3. Выводим настоящий AI-инсайт
+    document.getElementById('aiText').textContent = data.ai_insight || "Анализ завершен.";
 });
 
-function buildRealChart(data) {
+function buildMLChart(data) {
     const ctx = document.getElementById('mainChart').getContext('2d');
     
-    // Берем данные, которые прислал бэкенд
-    const labels = data.chart_labels || [];
-    const values = data.chart_data || [];
-    const labelName = data.chart_label_name || 'Значения';
+    // История
+    const labelsHistory = data.chart_history_labels || [];
+    const dataHistory = data.chart_history_data || [];
+    
+    // Прогноз
+    const labelsForecast = data.chart_forecast_labels || [];
+    const dataForecast = data.chart_forecast_data || [];
+
+    // Создаем единую ось X
+    const allLabels = [...labelsHistory, ...labelsForecast];
+    
+    // Набор данных 1: История (Столбцы)
+    const datasetHistory = {
+        label: 'Факт (История)',
+        data: [...dataHistory, ...Array(labelsForecast.length).fill(null)], // null разрывает линию
+        type: 'bar',
+        backgroundColor: 'rgba(46, 46, 46, 0.8)',
+        borderRadius: 4,
+        order: 2
+    };
+
+    // Набор данных 2: Прогноз (Линия)
+    const datasetForecast = {
+        label: 'ML Прогноз',
+        data: [...Array(labelsHistory.length).fill(null), ...dataForecast], // сдвиг вправо
+        type: 'line',
+        borderColor: '#d32f2f', // Красный цвет
+        backgroundColor: 'rgba(211, 47, 47, 0.2)',
+        borderWidth: 3,
+        borderDash: [5, 5], // Пунктирная линия
+        pointRadius: 4,
+        pointBackgroundColor: '#fff',
+        fill: false,
+        tension: 0.3, // Плавность линии
+        order: 1
+    };
 
     new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: labelName,
-                data: values,
-                backgroundColor: 'rgba(46, 46, 46, 0.7)',
-                borderColor: 'rgba(46, 46, 46, 1)',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
+        data: {  // <-- ВОТ ЭТОГО НЕ ХВАТАЛО! Ключ data:
+            labels: allLabels,
+            datasets: [datasetHistory, datasetForecast]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
             scales: {
-                y: { beginAtZero: true, grid: { color: '#eee' } },
+                y: { 
+                    beginAtZero: true, 
+                    grid: { color: '#eee' },
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString('ru-RU');
+                        }
+                    }
+                },
                 x: { grid: { display: false } }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += Math.round(context.parsed.y).toLocaleString('ru-RU');
+                            }
+                            return label;
+                        }
+                    }
+                },
+                legend: {
+                    position: 'top',
+                }
             }
         }
     });
-}
-
-function generateRealInsight(data) {
-    const summary = data.summary;
-    let text = "Анализ завершен. ";
-
-    if (summary && Object.keys(summary).length > 0) {
-        const firstCol = Object.keys(summary)[0];
-        const meanVal = Math.round(summary[firstCol].mean);
-        const maxVal = Math.round(summary[firstCol].max);
-        
-        text += `Среднее значение по колонке "${firstCol}" составляет ${meanVal}. `;
-        text += `Максимальное зафиксированное значение: ${maxVal}. `;
-        
-        if (maxVal > meanVal * 2) {
-            text += "⚠️ Обнаружены значительные выбросы в данных.";
-        } else {
-            text += "Распределение данных выглядит стабильным.";
-        }
-    } else {
-        text += "Числовые данные для глубокого анализа не найдены.";
-    }
-
-    document.getElementById('aiText').textContent = text;
 }
