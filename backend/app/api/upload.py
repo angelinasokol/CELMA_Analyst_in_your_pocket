@@ -4,27 +4,20 @@ import os
 
 router = APIRouter()
 
-# Папка для загрузки файлов
 UPLOAD_DIR = "storage"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-@router.post("/")
+@router.post("/upload/")
 async def upload_file(file: UploadFile = File(...)):
     """
     Загружает файл на сервер и возвращает его ID
     """
     try:
-        # Генерируем уникальный ID
         file_id = str(uuid.uuid4())
-        
-        # Определяем расширение файла
         file_extension = file.filename.split(".")[-1] if "." in file.filename else "bin"
-        
-        # Формируем безопасное имя файла
         file_name = f"{file_id}.{file_extension}"
         file_path = os.path.join(UPLOAD_DIR, file_name)
         
-        # Читаем и сохраняем файл
         content = await file.read()
         with open(file_path, "wb") as buffer:
             buffer.write(content)
