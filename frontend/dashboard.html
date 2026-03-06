@@ -5,56 +5,62 @@
     <title>CELMA — Дашборд</title>
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Подключаем Chart.js для графиков -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <link rel="stylesheet" href="css/style_dashboard.css">
-    <script type="module" src="js/dashboard.js"></script>
-
+    <link rel="stylesheet" href="css/style_dashboard.css">
 </head>
 <body>
 
 <header class="app-header">
-    <div class="app-header-left">
+    <div class="header-left">
         <img src="images/logo-icon.png" class="logo">
-        <span class="report-name">Отчёт: Продажи январь 2026</span>
+        <span class="report-name" id="reportTitle">Загрузка...</span>
     </div>
     <div class="tariff-badge">Бесплатный тариф • 1/1 отчёт</div>
+    <button onclick="window.location.href='addFile.html'" class="logout-btn">Новый файл</button>
 </header>
 
-<section class="dashboard">
-
-    <div class="kpi-row">
+<section class="dashboard-container">
+    
+    <!-- KPI Карточки -->
+    <div class="kpi-grid">
         <div class="kpi-card">
-            <h3>Выручка</h3>
-            <div class="kpi-value">3 240 000 ₽</div>
-            <div class="positive">+12% к прошлому месяцу</div>
+            <h3>Всего строк</h3>
+            <div class="kpi-value" id="kpiRows">0</div>
+            <div class="kpi-desc">Записей в отчете</div>
         </div>
-
         <div class="kpi-card">
-            <h3>Прогноз на февраль</h3>
-            <div class="kpi-value">3 600 000 ₽</div>
-            <div>Вероятность роста: 78%</div>
+            <h3>Колонок</h3>
+            <div class="kpi-value" id="kpiCols">0</div>
+            <div class="kpi-desc">Параметров анализа</div>
+        </div>
+        <div class="kpi-card highlight">
+            <h3>Статус</h3>
+            <div class="kpi-value" style="color: #2E7D32;">Обработан</div>
+            <div class="kpi-desc">AI анализ завершен</div>
         </div>
     </div>
 
-    <div class="charts-row">
-        <div class="chart-card">
-            <h3>Динамика продаж</h3>
-            <canvas id="salesChart"></canvas>
+    <!-- Графики -->
+    <div class="charts-grid">
+        <div class="chart-box">
+            <h3>📊 Динамика данных (первые 10 записей)</h3>
+            <canvas id="mainChart"></canvas>
         </div>
-
-        <div class="chart-card">
-            <h3>Прогноз на 3 месяца</h3>
+        <div class="chart-box">
+            <h3>🤖 AI Прогноз (симуляция)</h3>
             <canvas id="forecastChart"></canvas>
         </div>
     </div>
 
-    <div class="recommendation-card">
-        <h3>Рекомендация системы</h3>
-        Рост сегмента B связан с сезонным спросом. 
-        Рекомендуется увеличить закупку на 15% и расширить рекламную активность.
+    <!-- Блок рекомендаций -->
+    <div class="ai-recommendation">
+        <h3>💡 Инсайт от нейросети</h3>
+        <p id="aiText">Анализ завершен. Выявлены стандартные показатели. Для получения глубоких инсайтов подключите премиум-модель.</p>
     </div>
 
 </section>
 
+<script src="js/dashboard.js"></script>
 </body>
 </html>
