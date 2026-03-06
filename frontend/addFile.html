@@ -14,6 +14,14 @@
         <img src="images/logo-icon.png" alt="CELMA" class="processing-logo">
     </header>
 
+    <!-- Индикатор пользователя в шапке -->
+    <div class="user-info">
+        <span id="userEmail"></span>
+        <span id="reportsLeft"></span>
+        <button id="authBtn" class="auth-btn">Войти</button>
+        <button id="logoutBtn" style="display: none;">Выйти</button>
+    </div>
+
     <section class="upload-section">
         <div class="upload-card">
             <h2 class="upload-title">Перетащите файл сюда или нажмите, чтобы выбрать файл</h2>
@@ -93,196 +101,6 @@
     </footer>
 </div>
 
-<script>
-    (function() {
-        // === СЛАЙДЕР ===
-        function initSlider() {
-            const slides = document.querySelectorAll('.slide');
-            const prevBtn = document.querySelector('.slider-arrow.prev');
-            const nextBtn = document.querySelector('.slider-arrow.next');
-            const dots = document.querySelectorAll('.dot');
-            const currentSpan = document.querySelector('.current-slide');
-            const totalSpan = document.querySelector('.total-slides');
-
-            if (!slides.length || !prevBtn || !nextBtn) return;
-
-            let currentIndex = 0;
-            const totalSlides = slides.length;
-            if (totalSpan) totalSpan.textContent = totalSlides;
-
-            function updateSlider() {
-                slides.forEach((slide, idx) => {
-                    slide.classList.toggle('active', idx === currentIndex);
-                });
-                dots.forEach((dot, idx) => {
-                    dot.classList.toggle('active', idx === currentIndex);
-                });
-                if (currentSpan) currentSpan.textContent = currentIndex + 1;
-            }
-
-            function nextSlide() {
-                currentIndex = (currentIndex + 1) % totalSlides;
-                updateSlider();
-            }
-
-            function prevSlide() {
-                currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
-                updateSlider();
-            }
-
-            function goToSlide(index) {
-                if (index >= 0 && index < totalSlides) {
-                    currentIndex = index;
-                    updateSlider();
-                }
-            }
-
-            nextBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                nextSlide();
-            });
-
-            prevBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                prevSlide();
-            });
-
-            dots.forEach((dot, idx) => {
-                dot.addEventListener('click', () => goToSlide(idx));
-            });
-
-            updateSlider();
-        }
-
-        // === ЗАГРУЗКА ФАЙЛОВ ===
-        function initFileUpload() {
-            const uploadCard = document.querySelector(".upload-card");
-            const fileInput = document.getElementById("fileInput");
-            const browseBtn = document.getElementById("browseBtn");
-            const uploadStatus = document.getElementById("uploadStatus");
-
-            if (!uploadCard || !fileInput) return;
-
-            // Блокировка всех форм (на случай, если они появятся)
-            document.querySelectorAll('form').forEach(form => {
-                form.addEventListener('submit', (e) => e.preventDefault());
-            });
-
-            // Клик по карточке (но не по кнопке и не по input)
-            uploadCard.addEventListener("click", (e) => {
-                if (e.target !== browseBtn && e.target !== fileInput) {
-                    fileInput.click();
-                }
-            });
-
-            if (browseBtn) {
-                browseBtn.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    fileInput.click();
-                });
-            }
-
-            // Drag & Drop
-            uploadCard.addEventListener("dragover", (e) => {
-                e.preventDefault();
-                uploadCard.classList.add("dragover");
-            });
-            uploadCard.addEventListener("dragleave", (e) => {
-                e.preventDefault();
-                uploadCard.classList.remove("dragover");
-            });
-            uploadCard.addEventListener("drop", (e) => {
-                e.preventDefault();
-                uploadCard.classList.remove("dragover");
-                if (e.dataTransfer.files.length) {
-                    handleFile(e.dataTransfer.files[0]);
-                }
-            });
-
-            fileInput.addEventListener("change", (e) => {
-                if (fileInput.files.length > 0) {
-                    handleFile(fileInput.files[0]);
-                }
-                fileInput.value = '';
-            });
-
-            async function handleFile(file) {
-                const maxSize = 10 * 1024 * 1024;
-                if (file.size > maxSize) {
-                    showStatus("❌ Файл слишком большой. Максимум 10 МБ.", "#d32f2f");
-                    return;
-                }
-
-                const allowed = ['.csv', '.xlsx', '.xml'];
-                const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-                if (!allowed.includes(ext)) {
-                    showStatus("❌ Неподдерживаемый формат. Используйте .csv, .xlsx или .xml.", "#d32f2f");
-                    return;
-                }
-
-                showStatus("📤 Загрузка файла...", "#2196F3");
-
-                try {
-                    // ⚠️ ЗАМЕНИТЕ НА ВАШ АКТУАЛЬНЫЙ API_URL
-                    const API_URL = "https://friendly-halibut-rjpgrj4pvqq24g4-8000.app.github.dev";
-
-                    const formData = new FormData();
-                    formData.append("file", file);
-
-                    const uploadResponse = await fetch(`${API_URL}/upload/`, {
-                        method: "POST",
-                        body: formData
-                    });
-
-                    if (!uploadResponse.ok) throw new Error(`Ошибка HTTP: ${uploadResponse.status}`);
-
-                    const uploadResult = await uploadResponse.json();
-                    const fileId = uploadResult.file_id;
-                    console.log("✅ Файл загружен, ID:", fileId);
-
-                    sessionStorage.setItem("celma_file_id", fileId);
-                    showStatus("✅ Файл принят! Запускаем анализ...", "#2E7D32");
-
-                    // Переход на страницу обработки
-                    setTimeout(() => {
-                        window.location.href = "processing.html";
-                    }, 500);
-
-                } catch (error) {
-                    console.error("💥 Ошибка:", error);
-                    if (confirm("Не удалось связаться с сервером. Использовать демо-режим?")) {
-                        emulateSuccessUpload(file.name);
-                    } else {
-                        showStatus("❌ " + error.message, "#d32f2f");
-                    }
-                }
-            }
-
-            function showStatus(text, color) {
-                if (uploadStatus) {
-                    uploadStatus.textContent = text;
-                    uploadStatus.style.color = color;
-                }
-            }
-
-            function emulateSuccessUpload(filename) {
-                const mockFileId = "demo_" + Date.now();
-                sessionStorage.setItem("celma_file_id", mockFileId);
-                showStatus("🧪 Демо-режим: файл не отправлен, но анализ будет показан", "#FF9800");
-                setTimeout(() => {
-                    window.location.href = "processing.html";
-                }, 800);
-            }
-        }
-
-        // Запуск всего после загрузки DOM
-        document.addEventListener("DOMContentLoaded", () => {
-            initSlider();
-            initFileUpload();
-        });
-    })();
-</script>
 <!-- Модальное окно для входа/регистрации -->
 <div id="authModal" class="auth-modal" style="display: none;">
     <div class="auth-modal-content">
@@ -301,132 +119,13 @@
     </div>
 </div>
 
-<!-- Индикатор пользователя в шапке -->
-<div class="user-info">
-    <span id="userEmail"></span>
-    <span id="reportsLeft"></span>
-    <button id="authBtn" class="auth-btn">Войти</button>
-    <button id="logoutBtn" style="display: none;">Выйти</button>
-</div>
-
-<style>
-    .user-info {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        display: flex;
-        gap: 15px;
-        align-items: center;
-        background: white;
-        padding: 8px 16px;
-        border-radius: 30px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-
-    .auth-btn {
-        background: #2E2E2E;
-        color: white;
-        border: none;
-        padding: 6px 16px;
-        border-radius: 20px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-
-    #logoutBtn {
-        background: #ff4444;
-        color: white;
-        border: none;
-        padding: 6px 16px;
-        border-radius: 20px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-
-    .auth-modal {
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .auth-modal-content {
-        background-color: #fefefe;
-        padding: 30px;
-        border-radius: 20px;
-        width: 90%;
-        max-width: 400px;
-        position: relative;
-    }
-
-    .auth-close {
-        position: absolute;
-        right: 20px;
-        top: 15px;
-        font-size: 24px;
-        cursor: pointer;
-    }
-
-    #authForm input {
-        width: 100%;
-        padding: 12px;
-        margin: 10px 0;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        font-size: 14px;
-    }
-
-    #authForm button {
-        width: 100%;
-        padding: 12px;
-        background: #2E2E2E;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        cursor: pointer;
-        margin-top: 10px;
-    }
-
-    #authToggle {
-        text-align: center;
-        margin-top: 15px;
-        color: #666;
-    }
-
-    #authToggle a {
-        color: #2E2E2E;
-        text-decoration: none;
-        font-weight: 600;
-    }
-
-    #userEmail {
-        color: #2E2E2E;
-        font-size: 14px;
-    }
-
-    #reportsLeft {
-        background: #f0f0f0;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 12px;
-        color: #2E2E2E;
-    }
-</style>
-
 <script>
-// Аутентификация
 (function() {
-    const API_URL = "https://friendly-halibut-rjpgrj4pvqq24g4-8000.app.github.dev"; // Ваш URL
+    // === КОНФИГУРАЦИЯ ===
+    const API_URL = "https://friendly-halibut-rjpgrj4pvqq24g4-8000.app.github.dev"; // ЗАМЕНИТЕ НА СВОЙ URL
     let currentUser = null;
 
-    // DOM элементы
+    // === DOM ЭЛЕМЕНТЫ ===
     const authBtn = document.getElementById('authBtn');
     const logoutBtn = document.getElementById('logoutBtn');
     const userEmail = document.getElementById('userEmail');
@@ -438,9 +137,74 @@
     const authSubmit = document.getElementById('authSubmit');
     const authToggle = document.getElementById('authToggle');
     const switchToRegister = document.getElementById('switchToRegister');
+    const uploadCard = document.querySelector(".upload-card");
+    const fileInput = document.getElementById("fileInput");
+    const browseBtn = document.getElementById("browseBtn");
+    const uploadStatus = document.getElementById("uploadStatus");
 
     let isLoginMode = true;
 
+    // === СЛАЙДЕР ===
+    function initSlider() {
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.querySelector('.slider-arrow.prev');
+        const nextBtn = document.querySelector('.slider-arrow.next');
+        const dots = document.querySelectorAll('.dot');
+        const currentSpan = document.querySelector('.current-slide');
+        const totalSpan = document.querySelector('.total-slides');
+
+        if (!slides.length || !prevBtn || !nextBtn) return;
+
+        let currentIndex = 0;
+        const totalSlides = slides.length;
+        if (totalSpan) totalSpan.textContent = totalSlides;
+
+        function updateSlider() {
+            slides.forEach((slide, idx) => {
+                slide.classList.toggle('active', idx === currentIndex);
+            });
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === currentIndex);
+            });
+            if (currentSpan) currentSpan.textContent = currentIndex + 1;
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % totalSlides;
+            updateSlider();
+        }
+
+        function prevSlide() {
+            currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+            updateSlider();
+        }
+
+        function goToSlide(index) {
+            if (index >= 0 && index < totalSlides) {
+                currentIndex = index;
+                updateSlider();
+            }
+        }
+
+        nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            nextSlide();
+        });
+
+        prevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            prevSlide();
+        });
+
+        dots.forEach((dot, idx) => {
+            dot.addEventListener('click', () => goToSlide(idx));
+        });
+
+        updateSlider();
+    }
+
+    // === АУТЕНТИФИКАЦИЯ ===
+    
     // Проверяем сохраненный токен
     const token = localStorage.getItem('token');
     if (token) {
@@ -448,14 +212,18 @@
     }
 
     // Открыть модалку
-    authBtn.addEventListener('click', () => {
-        authModal.style.display = 'flex';
-    });
+    if (authBtn) {
+        authBtn.addEventListener('click', () => {
+            authModal.style.display = 'flex';
+        });
+    }
 
     // Закрыть модалку
-    authClose.addEventListener('click', () => {
-        authModal.style.display = 'none';
-    });
+    if (authClose) {
+        authClose.addEventListener('click', () => {
+            authModal.style.display = 'none';
+        });
+    }
 
     window.addEventListener('click', (e) => {
         if (e.target === authModal) {
@@ -464,8 +232,14 @@
     });
 
     // Переключение между логином и регистрацией
-    switchToRegister.addEventListener('click', (e) => {
-        e.preventDefault();
+    if (switchToRegister) {
+        switchToRegister.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleAuthMode();
+        });
+    }
+
+    function toggleAuthMode() {
         isLoginMode = !isLoginMode;
         if (isLoginMode) {
             authTitle.textContent = 'Вход в аккаунт';
@@ -476,44 +250,55 @@
             authSubmit.textContent = 'Зарегистрироваться';
             authToggle.innerHTML = 'Уже есть аккаунт? <a href="#" id="switchToRegister">Войти</a>';
         }
-        document.getElementById('switchToRegister').addEventListener('click', arguments.callee);
-    });
+        document.getElementById('switchToRegister').addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleAuthMode();
+        });
+    }
 
     // Обработка формы
-    authForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        
-        const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
-        
-        try {
-            const response = await fetch(`${API_URL}${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
+    if (authForm) {
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
+            
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
 
-            if (!response.ok) throw new Error('Ошибка авторизации');
-            
-            const data = await response.json();
-            localStorage.setItem('token', data.access_token);
-            
-            authModal.style.display = 'none';
-            fetchUserProfile(data.access_token);
-            
-        } catch (error) {
-            alert('Ошибка: ' + error.message);
-        }
-    });
+                if (!response.ok) throw new Error('Ошибка авторизации');
+                
+                const data = await response.json();
+                localStorage.setItem('token', data.access_token);
+                
+                authModal.style.display = 'none';
+                fetchUserProfile(data.access_token);
+                
+                // Очистить форму
+                document.getElementById('email').value = '';
+                document.getElementById('password').value = '';
+                
+            } catch (error) {
+                alert('Ошибка: ' + error.message);
+            }
+        });
+    }
 
     // Выход
-    logoutBtn.addEventListener('click', () => {
-        localStorage.removeItem('token');
-        currentUser = null;
-        updateUI();
-    });
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            currentUser = null;
+            updateUI();
+        });
+    }
 
     // Получение профиля пользователя
     async function fetchUserProfile(token) {
@@ -548,39 +333,146 @@
         }
     }
 
-    // Модифицируем функцию handleFile для отправки токена
-    const originalHandleFile = handleFile;
-    window.handleFile = async function(file) {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            alert('Сначала войдите в систему');
-            authModal.style.display = 'flex';
-            return;
+    // === ЗАГРУЗКА ФАЙЛОВ ===
+    function initFileUpload() {
+        if (!uploadCard || !fileInput) return;
+
+        // Блокировка всех форм
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', (e) => e.preventDefault());
+        });
+
+        // Клик по карточке
+        uploadCard.addEventListener("click", (e) => {
+            if (e.target !== browseBtn && e.target !== fileInput) {
+                fileInput.click();
+            }
+        });
+
+        if (browseBtn) {
+            browseBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                fileInput.click();
+            });
         }
 
-        try {
-            // Здесь ваш существующий код загрузки файла,
-            // но с добавлением заголовка Authorization
-            const formData = new FormData();
-            formData.append("file", file);
+        // Drag & Drop
+        uploadCard.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            uploadCard.classList.add("dragover");
+        });
+        uploadCard.addEventListener("dragleave", (e) => {
+            e.preventDefault();
+            uploadCard.classList.remove("dragover");
+        });
+        uploadCard.addEventListener("drop", (e) => {
+            e.preventDefault();
+            uploadCard.classList.remove("dragover");
+            if (e.dataTransfer.files.length) {
+                handleFileWithToken(e.dataTransfer.files[0]);
+            }
+        });
 
-            const uploadResponse = await fetch(`${API_URL}/upload/`, {
-                method: "POST",
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
-            });
+        fileInput.addEventListener("change", (e) => {
+            if (fileInput.files.length > 0) {
+                handleFileWithToken(fileInput.files[0]);
+            }
+            fileInput.value = '';
+        });
 
-            if (uploadResponse.status === 429) {
-                alert('Достигнут лимит отчетов на сегодня (10/10)');
+        async function handleFileWithToken(file) {
+            const token = localStorage.getItem('token');
+            
+            // Проверка авторизации
+            if (!token) {
+                alert('Сначала войдите в систему');
+                authModal.style.display = 'flex';
                 return;
             }
 
-            // ... остальной код загрузки
-            
-        } catch (error) {
-            console.error("Ошибка загрузки:", error);
+            // Проверка размера
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showStatus("❌ Файл слишком большой. Максимум 10 МБ.", "#d32f2f");
+                return;
+            }
+
+            // Проверка формата
+            const allowed = ['.csv', '.xlsx', '.xml'];
+            const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+            if (!allowed.includes(ext)) {
+                showStatus("❌ Неподдерживаемый формат. Используйте .csv, .xlsx или .xml.", "#d32f2f");
+                return;
+            }
+
+            showStatus("📤 Загрузка файла...", "#2196F3");
+
+            try {
+                const formData = new FormData();
+                formData.append("file", file);
+
+                const uploadResponse = await fetch(`${API_URL}/upload/`, {
+                    method: "POST",
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (uploadResponse.status === 401) {
+                    alert('Сессия истекла. Войдите снова.');
+                    localStorage.removeItem('token');
+                    authModal.style.display = 'flex';
+                    return;
+                }
+
+                if (uploadResponse.status === 429) {
+                    alert('Достигнут лимит отчетов на сегодня (10/10)');
+                    return;
+                }
+
+                if (!uploadResponse.ok) throw new Error(`Ошибка HTTP: ${uploadResponse.status}`);
+
+                const uploadResult = await uploadResponse.json();
+                const fileId = uploadResult.file_id;
+                console.log("✅ Файл загружен, ID:", fileId);
+
+                sessionStorage.setItem("celma_file_id", fileId);
+                showStatus("✅ Файл принят! Запускаем анализ...", "#2E7D32");
+
+                setTimeout(() => {
+                    window.location.href = "processing.html";
+                }, 500);
+
+            } catch (error) {
+                console.error("💥 Ошибка:", error);
+                if (confirm("Не удалось связаться с сервером. Использовать демо-режим?")) {
+                    const mockFileId = "demo_" + Date.now();
+                    sessionStorage.setItem("celma_file_id", mockFileId);
+                    showStatus("🧪 Демо-режим: файл не отправлен, но анализ будет показан", "#FF9800");
+                    setTimeout(() => {
+                        window.location.href = "processing.html";
+                    }, 800);
+                } else {
+                    showStatus("❌ " + error.message, "#d32f2f");
+                }
+            }
         }
-    };
+
+        function showStatus(text, color) {
+            if (uploadStatus) {
+                uploadStatus.textContent = text;
+                uploadStatus.style.color = color;
+            }
+        }
+    }
+
+    // === ЗАПУСК ===
+    document.addEventListener("DOMContentLoaded", () => {
+        initSlider();
+        initFileUpload();
+    });
 })();
 </script>
 </body>

@@ -239,6 +239,116 @@ footer {
     margin: 15px 0;            /* Отступ сверху и снизу */
     display: inline-block;     /* Чтобы работали отступы */
 }
+/* Стили для авторизации */
+        .user-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .auth-btn {
+            background: #2E2E2E;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #logoutBtn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .auth-modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-modal-content {
+            background-color: #fefefe;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .auth-close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        #authForm input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        #authForm button {
+            width: 100%;
+            padding: 12px;
+            background: #2E2E2E;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #authToggle {
+            text-align: center;
+            margin-top: 15px;
+            color: #666;
+        }
+
+        #authToggle a {
+            color: #2E2E2E;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        #userEmail {
+            color: #2E2E2E;
+            font-size: 14px;
+        }
+
+        #reportsLeft {
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #2E2E2E;
+        }
 
 .browse-btn:hover {
     background-color: #4a4a4a; /* Цвет при наведении */
