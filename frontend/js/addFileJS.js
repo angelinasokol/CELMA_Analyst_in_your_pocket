@@ -1,163 +1,183 @@
+// ✅ 1. URL БЕЗ пробелов в конце!
 const API_URL = "https://friendly-halibut-rjpgrj4pvqq24g4-8000.app.github.dev";
-document.addEventListener("DOMContentLoaded", function () {
-    const slides = document.querySelectorAll(".slide");
-    const dots = document.querySelectorAll(".dot");
-    const prevBtn = document.querySelector(".slider-arrow.prev");
-    const nextBtn = document.querySelector(".slider-arrow.next");
-    const currentSlideText = document.querySelector(".current-slide");
-    const totalSlidesText = document.querySelector(".total-slides");
-
-    let currentIndex = 0;
-    const totalSlides = slides.length;
-    totalSlidesText.textContent = totalSlides;
-
-    function showSlide(index) {
-        slides.forEach((slide, i) => {
-            slide.classList.toggle("active", i === index);
-        });
-        dots.forEach((dot, i) => {
-            dot.classList.toggle("active", i === index);
-        });
-        currentSlideText.textContent = index + 1;
-    }
-
-    function nextSlide() {
-        currentIndex = (currentIndex + 1) % totalSlides;
-        showSlide(currentIndex);
-    }
-
-    function prevSlide() {
-        currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
-        showSlide(currentIndex);
-    }
-
-    nextBtn.addEventListener("click", nextSlide);
-    prevBtn.addEventListener("click", prevSlide);
-
-    dots.forEach(dot => {
-        dot.addEventListener("click", () => {
-            currentIndex = parseInt(dot.dataset.index);
-            showSlide(currentIndex);
-        });
-    });
-
-    showSlide(currentIndex);
-});
 
 document.addEventListener("DOMContentLoaded", () => {
+    console.log("🚀 Скрипт загружен, начинаем инициализацию...");
+
+    // 🔥 2. ЖЕСТКАЯ БЛОКИРОВКА ВСЕХ ФОРМ НА СТРАНИЦЕ
+    // Это предотвращает перезагрузку страницы при клике
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("🚫 Форма заблокирована (preventDefault)");
+            return false;
+        });
+        form.setAttribute('onsubmit', 'return false;');
+    });
+
     const uploadCard = document.querySelector(".upload-card");
     const fileInput = document.getElementById("fileInput");
     const uploadStatus = document.getElementById("uploadStatus");
 
-    if (!uploadCard || !fileInput) return;
-    
-    // Клик по карточке
+    if (!uploadCard || !fileInput) {
+        console.error("❌ ОШИБКА: Не найдены элементы uploadCard или fileInput в HTML");
+        return;
+    }
+
+    // --- Обработчик клика по карточке ---
     uploadCard.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        console.log("👆 Клик по карточке, открываем выбор файла");
         fileInput.click();
     });
 
-    // Выбор файла
+    // --- Обработчик выбора файла через input ---
     fileInput.addEventListener("change", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        handleFile();
-    });
-    uploadCard.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        uploadCard.classList.add("dragover");
-    });
-
-    uploadCard.addEventListener("dragleave", () => {
-        uploadCard.classList.remove("dragover");
-    });
-
-    uploadCard.addEventListener("drop", (e) => {
-        e.preventDefault();
-        uploadCard.classList.remove("dragover");
-
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            processFile(files[0]);
-        }
-    });
-
-    function handleFile() {
+        console.log("📁 Файл выбран через input:", fileInput.files[0]?.name);
+        
         if (fileInput.files.length > 0) {
             processFile(fileInput.files[0]);
+        } else {
+            console.warn("⚠️ Файл не выбран");
         }
-    }
+    });
 
+    // --- Drag & Drop: Наведение ---
+    uploadCard.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadCard.classList.add("dragover");
+        console.log("📂 Drag over (наведение)");
+    });
+
+    // --- Drag & Drop: Уход ---
+    uploadCard.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadCard.classList.remove("dragover");
+        console.log("📂 Drag leave (уход)");
+    });
+
+    // --- Drag & Drop: Сброс файла ---
+    uploadCard.addEventListener("drop", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadCard.classList.remove("dragover");
+        
+        console.log("📂 Drop event (сброс)");
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            console.log("✅ Файл получен через Drag-Drop:", files[0].name);
+            processFile(files[0]);
+        } else {
+            console.warn("⚠️ В drop нет файлов");
+        }
+    });
+
+    // ==========================================
+    // ОСНОВНАЯ ФУНКЦИЯ ОБРАБОТКИ
+    // ==========================================
     async function processFile(file) {
+        console.log("🚀 [processFile] Запуск обработки файла:", file.name);
+        
+        // 1. Проверка размера (макс 10 МБ)
         const maxSize = 10 * 1024 * 1024;
         if (file.size > maxSize) {
-            uploadStatus.textContent = "❌ Файл превышает 10 МБ";
+            const msg = "❌ Файл слишком большой (>10 МБ)";
+            console.error(msg);
+            uploadStatus.textContent = msg;
             return;
         }
         
-        const allowedExtensions = ["csv", "xlsx", "xml"];
-        const extension = file.name.split(".").pop().toLowerCase();
+        // 2. Проверка расширения
+        const ext = file.name.split(".").pop().toLowerCase();
+        const allowed = ["csv", "xlsx", "xml"];
         
-        if (!allowedExtensions.includes(extension)) {
-            uploadStatus.textContent = "❌ Неподдерживаемый формат файла";
+        if (!allowed.includes(ext)) {
+            const msg = "❌ Недопустимый формат (разрешены: .csv, .xlsx, .xml)";
+            console.error(msg);
+            uploadStatus.textContent = msg;
             return;
         }
 
-        uploadStatus.textContent = "📤 Загружаем файл...";
+        console.log("✅ Проверки пройдены. Начинаем загрузку...");
+        uploadStatus.textContent = "📤 Загружаем файл на сервер...";
         
         try {
-            // ШАГ 1: Загрузка файла
+            // Подготовка данных
             const formData = new FormData();
             formData.append("file", file);
-
-            const uploadResponse = await fetch(`${API_URL}/upload/`, {
+            
+            const targetUrl = `${API_URL}/upload/`;
+            console.log("📡 Отправка POST запроса на:", targetUrl);
+            
+            // ЗАПРОС К СЕРВЕРУ
+            const response = await fetch(targetUrl, {
                 method: "POST",
                 body: formData
+                // Заголовки Content-Type ставить не нужно, браузер сам ставит multipart/form-data
             });
-
-            if (!uploadResponse.ok) {
-                throw new Error(`Ошибка загрузки: ${uploadResponse.status}`);
+            
+            console.log("📥 Получен ответ от сервера. Статус:", response.status, "OK:", response.ok);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Ошибка сервера ${response.status}: ${errorText}`);
+            }
+            
+            const result = await response.json();
+            console.log("✅ Успех! Данные от сервера:", result);
+            
+            // Сохранение ID файла
+            const fileId = result.file_id;
+            if (!fileId) {
+                throw new Error("Сервер не вернул file_id");
             }
 
-            const uploadResult = await uploadResponse.json();
-            const fileId = uploadResult.file_id;
+            uploadStatus.textContent = "📊 Анализ данных...";
             
-            console.log("✅ Файл загружен:", fileId);
-            uploadStatus.textContent = "📊 Анализируем...";
-
-            // ШАГ 2: Получение аналитики
-            const analyticsResponse = await fetch(`${API_URL}/analytics/${fileId}`, {
-                method: "POST"
-            });
-
-            if (!analyticsResponse.ok) {
-                throw new Error("Ошибка аналитики: " + analyticsResponse.status);
-            }
-
-            const analyticsData = await analyticsResponse.json();
-            console.log("✅ Аналитика:", analyticsData);
-
-            // ШАГ 3: Сохранение
-            const analytics = {
-                fileId: fileId,
-                fileName: file.name,
-                fileSize: file.size,
-                ...analyticsData,
-                processedAt: new Date().toISOString()
-            };
-            
-            sessionStorage.setItem('celma_analytics', JSON.stringify(analytics));
+            // Сохраняем в sessionStorage для следующей страницы
             sessionStorage.setItem('celma_file_id', fileId);
+            sessionStorage.setItem('celma_analytics', JSON.stringify(result));
+            console.log("💾 Данные сохранены в sessionStorage");
             
-            console.log("💾 Сохранено в sessionStorage");
-            uploadStatus.textContent = "✅ Готово! Переходим...";
+            // ==========================================
+            // РЕДИРЕКТ
+            // ==========================================
+            uploadStatus.textContent = "✅ Готово! Перенаправляем...";
             
+            console.log("⏳ Таймер редиректа запущен (500 мс)...");
             
-            window.location.href = "processing.html";
+            setTimeout(() => {
+                console.log("⏰ Таймер сработал. Текущий URL:", window.location.href);
+                console.log("🔄 Выполняем переход на processing.html");
+                
+                // Используем replace, чтобы нельзя было вернуться кнопкой "Назад" на эту же страницу с файлом
+                window.location.replace("processing.html");
+                
+                // Если replace не сработает (редко), пробуем href
+                // window.location.href = "processing.html"; 
+            }, 500);
+            
         } catch (error) {
-            console.error("❌ Ошибка:", error);
-            uploadStatus.textContent = "❌ " + error.message;
+            console.error("💥 КРИТИЧЕСКАЯ ОШИБКА в processFile:", error);
+            console.error("Stack trace:", error.stack);
+            
+            let errorMsg = "❌ Произошла неизвестная ошибка";
+            if (error.message) {
+                errorMsg = "❌ " + error.message;
+            }
+            // Если ошибка сетевая (Failed to fetch)
+            if (error.message.includes("Failed to fetch") || error.message.includes("fetch")) {
+                errorMsg = "❌ Нет связи с сервером. Проверьте консоль и подключение.";
+            }
+            
+            uploadStatus.textContent = errorMsg;
         }
     }
 });
