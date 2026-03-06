@@ -6,7 +6,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style_addFile.css">
-    <script src="js/addFileJS.js?v=3"></script>
+    <!-- Убрали подключение внешнего скрипта, так как код теперь встроен -->
 </head>
 <body>
 
@@ -17,7 +17,6 @@
             <img src="images/logo-icon.png" alt="CELMA" class="processing-logo">
         </div>
     </header>
-
 
     <section class="upload-section">
         <div class="upload-card">
@@ -31,16 +30,14 @@
 
             <div class="upload-divider"></div>
 
-                <!-- 🔥 ДОБАВЛЯЕМ ЭТУ КНОПКУ -->
             <button type="button" id="browseBtn" class="browse-btn">Browse File</button>
-            <!-- 🔥 КОНЕЦ ДОБАВЛЕНИЯ -->
 
             <div class="upload-info">
-                Поддерживаются форматы: .csv .lsx .xml<br>
+                Поддерживаются форматы: .csv .xlsx .xml<br>
                 Максимальный размер файла: 10 МБ
             </div>
             <input type="file" id="fileInput" class="file-input" accept=".csv,.xlsx,.xml">
-        <div class="upload-status" id="uploadStatus"></div>
+            <div class="upload-status" id="uploadStatus"></div>
         </div>
     </section>
 
@@ -117,6 +114,228 @@
 
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("🚀 DOM загружен. Инициализация CELMA...");
+
+    // ==================== СЛАЙДЕР ====================
+    initSlider();
+
+    // ==================== ЗАГРУЗКА ФАЙЛОВ ====================
+    const uploadCard = document.querySelector(".upload-card");
+    const fileInput = document.getElementById("fileInput");
+    const browseBtn = document.getElementById("browseBtn");
+    const uploadStatus = document.getElementById("uploadStatus");
+
+    if (!uploadCard || !fileInput) return;
+
+    // Блокировка отправки форм
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', (e) => { e.preventDefault(); return false; });
+    });
+
+    // Клик по карточке (но не по кнопке и не по input)
+    uploadCard.addEventListener("click", (e) => {
+        if (e.target !== browseBtn && e.target !== fileInput) {
+            fileInput.click();
+        }
+    });
+
+    // Клик по кнопке Browse
+    if (browseBtn) {
+        browseBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            fileInput.click();
+        });
+    }
+
+    // Drag & Drop
+    uploadCard.addEventListener("dragover", (e) => { 
+        e.preventDefault(); 
+        uploadCard.classList.add("dragover"); 
+    });
+    uploadCard.addEventListener("dragleave", (e) => { 
+        e.preventDefault(); 
+        uploadCard.classList.remove("dragover"); 
+    });
+    uploadCard.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadCard.classList.remove("dragover");
+        if (e.dataTransfer.files.length) {
+            handleFile(e.dataTransfer.files[0]);
+        }
+    });
+
+    // Выбор файла через input
+    fileInput.addEventListener("change", (e) => {
+        if (fileInput.files.length > 0) {
+            handleFile(fileInput.files[0]);
+        }
+        fileInput.value = ''; // позволяем выбрать тот же файл повторно
+    });
+
+    // Функция проверки и отправки файла
+    async function handleFile(file) {
+        // Проверка размера (10 МБ = 10 * 1024 * 1024 байт)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            showStatus("❌ Файл слишком большой. Максимум 10 МБ.", "#d32f2f");
+            return;
+        }
+
+        // Проверка расширения (на всякий случай, хотя accept уже работает)
+        const allowedExtensions = ['.csv', '.xlsx', '.xml'];
+        const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+        if (!allowedExtensions.includes(ext)) {
+            showStatus("❌ Неподдерживаемый формат. Используйте .csv, .xlsx или .xml.", "#d32f2f");
+            return;
+        }
+
+        showStatus("📤 Загрузка файла...", "#2196F3");
+
+        try {
+            // Попытка отправить на реальный API
+            const API_URL = "https://friendly-halibut-rjpgrj4pvqq24g4-8000.app.github.dev"; // замените на ваш актуальный URL
+            const response = await fetch(`${API_URL}/upload/`, {
+                method: "POST",
+                body: (() => {
+                    const fd = new FormData();
+                    fd.append("file", file);
+                    return fd;
+                })()
+            });
+
+            if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
+
+            const uploadResult = await response.json();
+            const fileId = uploadResult.file_id;
+            console.log("✅ Файл загружен, ID:", fileId);
+
+            showStatus("🧠 Нейросеть анализирует...", "#FF9800");
+
+            // Запрос аналитики
+            const analyticsResponse = await fetch(`${API_URL}/analytics/${fileId}`, { method: "POST" });
+            let fullData;
+            if (!analyticsResponse.ok) {
+                console.warn("⚠️ Аналитика не удалась, используем базовые данные");
+                fullData = uploadResult; // минимум данных
+            } else {
+                fullData = await analyticsResponse.json();
+                console.log("📊 Полные данные аналитики получены:", fullData);
+            }
+
+            fullData.filename = file.name; // добавим имя файла
+            sessionStorage.setItem("celma_file_id", fileId);
+            sessionStorage.setItem("celma_analytics", JSON.stringify(fullData));
+
+            showStatus("✅ Готово! Переходим...", "#2E7D32");
+
+            setTimeout(() => {
+                window.location.href = "processing.html";
+            }, 800);
+
+        } catch (error) {
+            console.error("💥 Ошибка:", error);
+            // Эмуляция для тестирования интерфейса (если API недоступен)
+            if (confirm("Не удалось связаться с сервером. Загрузить демо-данные для теста?")) {
+                emulateSuccessUpload(file.name);
+            } else {
+                showStatus("❌ " + error.message, "#d32f2f");
+            }
+        }
+    }
+
+    function showStatus(text, color) {
+        if (uploadStatus) {
+            uploadStatus.textContent = text;
+            uploadStatus.style.color = color;
+        }
+    }
+
+    // Эмуляция успешной загрузки (для офлайн-теста)
+    function emulateSuccessUpload(filename) {
+        showStatus("🧪 Тестовый режим: генерация демо-данных...", "#FF9800");
+        setTimeout(() => {
+            const mockData = {
+                filename: filename,
+                file_id: "test_123",
+                summary: "Это демо-аналитика. Файл не был отправлен на сервер.",
+                charts: ["chart1", "chart2"],
+                forecast: { next_month: 12345 }
+            };
+            sessionStorage.setItem("celma_file_id", mockData.file_id);
+            sessionStorage.setItem("celma_analytics", JSON.stringify(mockData));
+            showStatus("✅ Демо-данные готовы. Переходим...", "#2E7D32");
+            setTimeout(() => {
+                window.location.href = "processing.html";
+            }, 800);
+        }, 1500);
+    }
+
+    // ==================== ФУНКЦИИ СЛАЙДЕРА ====================
+    function initSlider() {
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.querySelector('.slider-arrow.prev');
+        const nextBtn = document.querySelector('.slider-arrow.next');
+        const dots = document.querySelectorAll('.dot');
+        const currentSpan = document.querySelector('.current-slide');
+        const totalSpan = document.querySelector('.total-slides');
+
+        if (!slides.length || !prevBtn || !nextBtn) return;
+
+        let currentIndex = 0;
+        const totalSlides = slides.length;
+
+        if (totalSpan) totalSpan.textContent = totalSlides;
+
+        function updateSlider() {
+            slides.forEach((slide, idx) => {
+                slide.classList.toggle('active', idx === currentIndex);
+            });
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === currentIndex);
+            });
+            if (currentSpan) currentSpan.textContent = currentIndex + 1;
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % totalSlides;
+            updateSlider();
+        }
+
+        function prevSlide() {
+            currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+            updateSlider();
+        }
+
+        function goToSlide(index) {
+            if (index >= 0 && index < totalSlides) {
+                currentIndex = index;
+                updateSlider();
+            }
+        }
+
+        // Обработчики
+        nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            nextSlide();
+        });
+
+        prevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            prevSlide();
+        });
+
+        dots.forEach((dot, idx) => {
+            dot.addEventListener('click', () => goToSlide(idx));
+        });
+
+        // Автоматическая инициализация
+        updateSlider();
+    }
+});
+</script>
 
 </body>
 </html>
