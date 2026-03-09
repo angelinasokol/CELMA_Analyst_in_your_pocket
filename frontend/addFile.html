@@ -2,130 +2,528 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>CELMA — карманный аналитик</title>
+    <title>CELMA — Карманный аналитик</title>
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style_addFile.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #2E2E2E;
+            min-height: 100vh;
+        }
+
+        .wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* HEADER */
+        .processing-header {
+            padding: 30px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .processing-logo {
+            height: 60px;
+            filter: brightness(0) invert(1);
+        }
+
+        /* USER INFO */
+        .user-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            z-index: 1000;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        #userEmail {
+            font-weight: 600;
+            color: #2E2E2E;
+        }
+
+        #reportsLeft {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .auth-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        #logoutBtn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* UPLOAD SECTION */
+        .upload-section {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 0;
+        }
+
+        .upload-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 40px;
+            padding: 60px;
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+            border: 2px dashed rgba(102, 126, 234, 0.3);
+        }
+
+        .upload-card.dragover {
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.98);
+            transform: scale(1.02);
+            box-shadow: 0 40px 80px rgba(102, 126, 234, 0.3);
+        }
+
+        .upload-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cloud-icon {
+            margin: 30px 0;
+        }
+
+        .cloud-icon-img {
+            width: 120px;
+            height: auto;
+            filter: drop-shadow(0 10px 20px rgba(102, 126, 234, 0.3));
+        }
+
+        .upload-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #667eea, transparent);
+            margin: 40px 0;
+        }
+
+        .browse-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .browse-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .upload-info {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-status {
+            margin-top: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            min-height: 24px;
+        }
+
+        /* PRICING SECTION */
+        .pricing-section {
+            padding: 80px 0;
+        }
+
+        .pricing-title {
+            text-align: center;
+            font-size: 48px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 60px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px;
+        }
+
+        .pricing-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            transition: transform 0.3s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .pricing-card.popular {
+            border-color: #667eea;
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .pricing-card h3 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .price {
+            font-size: 48px;
+            font-weight: 800;
+            color: #2E2E2E;
+            margin-bottom: 30px;
+        }
+
+        .price span {
+            font-size: 18px;
+            font-weight: 400;
+            color: #999;
+        }
+
+        .features {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .features li {
+            padding: 10px 0;
+            color: #666;
+            font-size: 16px;
+        }
+
+        .features i {
+            color: #667eea;
+            margin-right: 10px;
+        }
+
+        .select-tariff {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+
+        .select-tariff:hover {
+            transform: scale(1.05);
+        }
+
+        /* AUTH MODAL */
+        .auth-modal {
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-modal-content {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            width: 90%;
+            max-width: 450px;
+            position: relative;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.2);
+        }
+
+        .auth-close {
+            position: absolute;
+            right: 25px;
+            top: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.2s;
+        }
+
+        .auth-close:hover {
+            color: #667eea;
+        }
+
+        #authTitle {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #authForm input {
+            width: 100%;
+            padding: 15px 20px;
+            margin: 10px 0;
+            border: 2px solid #f0f0f0;
+            border-radius: 15px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        #authForm input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        #authForm button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        #authForm button:hover {
+            transform: translateY(-2px);
+        }
+
+        #authToggle {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        #authToggle a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* DEMO BANNER */
+        .demo-banner {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .demo-banner span {
+            font-size: 16px;
+            color: #2E2E2E;
+        }
+
+        .demo-banner button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .upload-title { font-size: 22px; }
+            .upload-card { padding: 30px; }
+            .pricing-grid { grid-template-columns: 1fr; }
+            .demo-banner { flex-direction: column; text-align: center; }
+        }
+    </style>
 </head>
 <body>
 <div class="wrapper">
-
+    <!-- HEADER -->
     <header class="processing-header">
         <img src="images/logo-icon.png" alt="CELMA" class="processing-logo">
     </header>
 
-    <!-- Индикатор пользователя в шапке -->
+    <!-- USER INFO -->
     <div class="user-info">
         <span id="userEmail"></span>
         <span id="reportsLeft"></span>
-        <button id="authBtn" class="auth-btn">Войти</button>
+        <button id="authBtn" class="auth-btn">Войти / Регистрация</button>
         <button id="logoutBtn" style="display: none;">Выйти</button>
     </div>
 
+    <!-- DEMO BANNER (показывается только для неавторизованных) -->
+    <div id="demoBanner" class="demo-banner" style="display: none;">
+        <span>🎁 У вас есть <strong>1 бесплатный отчет</strong> без регистрации</span>
+        <button onclick="useTrial()">Попробовать</button>
+        <button onclick="showAuthModal()">Зарегистрироваться</button>
+    </div>
+
+    <!-- UPLOAD SECTION -->
     <section class="upload-section">
-        <div class="upload-card">
+        <div class="upload-card" id="uploadCard">
             <h2 class="upload-title">Перетащите файл сюда или нажмите, чтобы выбрать файл</h2>
             <div class="cloud-icon">
                 <img src="images/cloud-icon.png" alt="Upload" class="cloud-icon-img">
             </div>
             <div class="upload-divider"></div>
-            <button type="button" id="browseBtn" class="browse-btn">Browse File</button>
+            <button type="button" id="browseBtn" class="browse-btn">Выбрать файл</button>
             <div class="upload-info">
-                Поддерживаются форматы: .csv .xlsx .xml<br>
-                Максимальный размер файла: 10 МБ
+                Поддерживаются форматы: .csv, .xlsx, .xml<br>
+                Максимальный размер: 10 МБ
             </div>
             <input type="file" id="fileInput" class="file-input" accept=".csv,.xlsx,.xml">
             <div class="upload-status" id="uploadStatus"></div>
         </div>
     </section>
 
-    <section class="result-section">
-        <h2 class="result-title">ПРИМЕР РЕЗУЛЬТАТА</h2>
-
-        <div class="slider-container">
-            <div class="slider">
-                <div class="slide active">
-                    <img src="images/result-1.png" alt="Пример результата - страница 1" class="result-image">
-                </div>
-                <div class="slide">
-                    <img src="images/result-2.png" alt="Пример результата - страница 2" class="result-image">
-                </div>
-                <div class="slide">
-                    <img src="images/result-3.png" alt="Пример результата - страница 3" class="result-image">
-                </div>
-                <div class="slide">
-                    <img src="images/result-4.png" alt="Пример результата - страница 4" class="result-image">
-                </div>
-                <div class="slide">
-                    <img src="images/result-5.png" alt="Пример результата - страница 5" class="result-image">
-                </div>
+    <!-- PRICING SECTION -->
+    <section class="pricing-section" id="pricing">
+        <h2 class="pricing-title">Тарифы CELMA</h2>
+        <div class="pricing-grid">
+            <div class="pricing-card" data-tariff="free">
+                <h3>Free</h3>
+                <div class="price">0₽ <span>/ навсегда</span></div>
+                <ul class="features">
+                    <li><i class="fas fa-check"></i> 1 отчет в день</li>
+                    <li><i class="fas fa-check"></i> Базовый анализ</li>
+                    <li><i class="fas fa-check"></i> CSV, XLSX поддержка</li>
+                </ul>
+                <button class="select-tariff" onclick="selectTariff('free')">Текущий тариф</button>
             </div>
-
-            <button class="slider-arrow prev" aria-label="Предыдущий пример">
-                <img src="images/arrow-left.png" alt="Previous">
-            </button>
-            <button class="slider-arrow next" aria-label="Следующий пример">
-                <img src="images/arrow-right.png" alt="Next">
-            </button>
-
-            <div class="slider-dots">
-                <span class="dot active" data-index="0"></span>
-                <span class="dot" data-index="1"></span>
-                <span class="dot" data-index="2"></span>
-                <span class="dot" data-index="3"></span>
-                <span class="dot" data-index="4"></span>
+            
+            <div class="pricing-card popular" data-tariff="pro">
+                <div class="popular-badge">🔥 Популярный</div>
+                <h3>Pro</h3>
+                <div class="price">990₽ <span>/ месяц</span></div>
+                <ul class="features">
+                    <li><i class="fas fa-check"></i> 50 отчетов в месяц</li>
+                    <li><i class="fas fa-check"></i> Расширенный анализ</li>
+                    <li><i class="fas fa-check"></i> Экспорт в PDF</li>
+                    <li><i class="fas fa-check"></i> Приоритетная поддержка</li>
+                </ul>
+                <button class="select-tariff" onclick="selectTariff('pro')">Выбрать Pro</button>
             </div>
-
-            <div class="slide-counter">
-                <span class="current-slide">1</span> / <span class="total-slides">5</span>
+            
+            <div class="pricing-card" data-tariff="business">
+                <h3>Business</h3>
+                <div class="price">2990₽ <span>/ месяц</span></div>
+                <ul class="features">
+                    <li><i class="fas fa-check"></i> 500 отчетов в месяц</li>
+                    <li><i class="fas fa-check"></i> API доступ</li>
+                    <li><i class="fas fa-check"></i> Командная работа</li>
+                    <li><i class="fas fa-check"></i> Выделенный менеджер</li>
+                </ul>
+                <button class="select-tariff" onclick="selectTariff('business')">Выбрать Business</button>
             </div>
         </div>
     </section>
-
-    <footer class="footer">
-        <div class="footer-left">
-            <p>© 2026 Celma Все права защищены.</p>
-        </div>
-        <div class="footer-center">
-            <img src="images/logo-icon.png" alt="" class="footer-logo">
-        </div>
-        <div class="footer-right">
-            <a href="#" class="footer-link">Конфиденциальность</a>
-            <a href="#" class="footer-link">Условия</a>
-            <div class="socials">
-                <a href="#" class="social-link" aria-label="Telegram"><img src="images/tg-icon.png" alt=""></a>
-                <a href="#" class="social-link" aria-label="VK"><img src="images/vk-icon.png" alt=""></a>
-                <a href="#" class="social-link" aria-label="Mail"><img src="images/gmail-icon.png" alt=""></a>
-            </div>
-        </div>
-    </footer>
 </div>
 
-<!-- Модальное окно для входа/регистрации -->
+<!-- AUTH MODAL -->
 <div id="authModal" class="auth-modal" style="display: none;">
     <div class="auth-modal-content">
         <span class="auth-close">&times;</span>
         <h2 id="authTitle">Вход в аккаунт</h2>
-        
         <form id="authForm">
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="password" id="password" placeholder="Пароль" required>
+            <input type="email" id="email" placeholder="Email" required autocomplete="username">
+            <input type="password" id="password" placeholder="Пароль" required autocomplete="current-password">
+            <input type="text" id="fullName" placeholder="Имя (для регистрации)" style="display: none;">
             <button type="submit" id="authSubmit">Войти</button>
         </form>
-        
-        <p id="authToggle">
-            Нет аккаунта? <a href="#" id="switchToRegister">Зарегистрироваться</a>
-        </p>
+        <p id="authToggle">Нет аккаунта? <a href="#" id="switchToRegister">Зарегистрироваться</a></p>
     </div>
 </div>
 
 <script>
 (function() {
-    // === КОНФИГУРАЦИЯ ===
-    const API_URL = "https://friendly-halibut-rjpgrj4pvqq24g4-8000.app.github.dev"; // ЗАМЕНИТЕ НА СВОЙ URL
+    // Конфигурация
+    const API_URL = "https://friendly-halibut-rjpgrj4pvqq24g4-8000.app.github.dev";
     let currentUser = null;
+    let isLoginMode = true;
+    let isUploading = false;
+    let trialUsed = localStorage.getItem('trial_used') === 'true';
 
-    // === DOM ЭЛЕМЕНТЫ ===
+    // DOM элементы
     const authBtn = document.getElementById('authBtn');
     const logoutBtn = document.getElementById('logoutBtn');
     const userEmail = document.getElementById('userEmail');
@@ -137,184 +535,143 @@
     const authSubmit = document.getElementById('authSubmit');
     const authToggle = document.getElementById('authToggle');
     const switchToRegister = document.getElementById('switchToRegister');
-    const uploadCard = document.querySelector(".upload-card");
-    const fileInput = document.getElementById("fileInput");
-    const browseBtn = document.getElementById("browseBtn");
-    const uploadStatus = document.getElementById("uploadStatus");
+    const uploadCard = document.getElementById('uploadCard');
+    const fileInput = document.getElementById('fileInput');
+    const browseBtn = document.getElementById('browseBtn');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const demoBanner = document.getElementById('demoBanner');
+    const fullNameInput = document.getElementById('fullName');
 
-    let isLoginMode = true;
-
-    // === СЛАЙДЕР ===
-    function initSlider() {
-        const slides = document.querySelectorAll('.slide');
-        const prevBtn = document.querySelector('.slider-arrow.prev');
-        const nextBtn = document.querySelector('.slider-arrow.next');
-        const dots = document.querySelectorAll('.dot');
-        const currentSpan = document.querySelector('.current-slide');
-        const totalSpan = document.querySelector('.total-slides');
-
-        if (!slides.length || !prevBtn || !nextBtn) return;
-
-        let currentIndex = 0;
-        const totalSlides = slides.length;
-        if (totalSpan) totalSpan.textContent = totalSlides;
-
-        function updateSlider() {
-            slides.forEach((slide, idx) => {
-                slide.classList.toggle('active', idx === currentIndex);
-            });
-            dots.forEach((dot, idx) => {
-                dot.classList.toggle('active', idx === currentIndex);
-            });
-            if (currentSpan) currentSpan.textContent = currentIndex + 1;
-        }
-
-        function nextSlide() {
-            currentIndex = (currentIndex + 1) % totalSlides;
-            updateSlider();
-        }
-
-        function prevSlide() {
-            currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
-            updateSlider();
-        }
-
-        function goToSlide(index) {
-            if (index >= 0 && index < totalSlides) {
-                currentIndex = index;
-                updateSlider();
-            }
-        }
-
-        nextBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            nextSlide();
-        });
-
-        prevBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            prevSlide();
-        });
-
-        dots.forEach((dot, idx) => {
-            dot.addEventListener('click', () => goToSlide(idx));
-        });
-
-        updateSlider();
+    // Показываем демо-баннер если не авторизован и не использовал пробный доступ
+    if (!localStorage.getItem('token') && !trialUsed) {
+        demoBanner.style.display = 'flex';
     }
 
-    // === АУТЕНТИФИКАЦИЯ ===
-    
+    // Глобальные функции для кнопок
+    window.useTrial = function() {
+        localStorage.setItem('trial_used', 'true');
+        localStorage.setItem('trial_file_id', 'trial_' + Date.now());
+        demoBanner.style.display = 'none';
+        sessionStorage.setItem('celma_file_id', 'trial_' + Date.now());
+        window.location.href = 'processing.html';
+    };
+
+    window.showAuthModal = function() {
+        authModal.style.display = 'flex';
+    };
+
+    window.selectTariff = function(tariff) {
+        if (!currentUser) {
+            alert('Сначала войдите в систему');
+            authModal.style.display = 'flex';
+            return;
+        }
+        
+        // Здесь будет интеграция с платежной системой
+        alert(`Выбран тариф ${tariff}. Перенаправление на оплату...`);
+    };
+
     // Проверяем сохраненный токен
     const token = localStorage.getItem('token');
     if (token) {
         fetchUserProfile(token);
     }
 
-    // Открыть модалку
-    if (authBtn) {
-        authBtn.addEventListener('click', () => {
-            authModal.style.display = 'flex';
-        });
-    }
-
-    // Закрыть модалку
-    if (authClose) {
-        authClose.addEventListener('click', () => {
-            authModal.style.display = 'none';
-        });
-    }
-
-    window.addEventListener('click', (e) => {
+    // Auth events
+    authBtn?.addEventListener('click', () => authModal.style.display = 'flex');
+    
+    authClose?.addEventListener('click', () => {
+        authModal.style.display = 'none';
+        fullNameInput.style.display = 'none';
+    });
+    
+    window.addEventListener('click', (e) => { 
         if (e.target === authModal) {
             authModal.style.display = 'none';
+            fullNameInput.style.display = 'none';
         }
     });
 
     // Переключение между логином и регистрацией
-    if (switchToRegister) {
-        switchToRegister.addEventListener('click', (e) => {
-            e.preventDefault();
-            toggleAuthMode();
-        });
-    }
-
-    function toggleAuthMode() {
+    switchToRegister?.addEventListener('click', (e) => {
+        e.preventDefault();
         isLoginMode = !isLoginMode;
+        
         if (isLoginMode) {
             authTitle.textContent = 'Вход в аккаунт';
             authSubmit.textContent = 'Войти';
+            fullNameInput.style.display = 'none';
             authToggle.innerHTML = 'Нет аккаунта? <a href="#" id="switchToRegister">Зарегистрироваться</a>';
         } else {
             authTitle.textContent = 'Регистрация';
             authSubmit.textContent = 'Зарегистрироваться';
+            fullNameInput.style.display = 'block';
+            fullNameInput.required = true;
             authToggle.innerHTML = 'Уже есть аккаунт? <a href="#" id="switchToRegister">Войти</a>';
         }
-        document.getElementById('switchToRegister').addEventListener('click', (e) => {
-            e.preventDefault();
-            toggleAuthMode();
-        });
-    }
+        
+        document.getElementById('switchToRegister')?.addEventListener('click', arguments.callee);
+    });
 
     // Обработка формы
-    if (authForm) {
-        authForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
-            
-            try {
-                const response = await fetch(`${API_URL}${endpoint}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
+    authForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const fullName = fullNameInput.value;
+        const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
+        
+        const body = isLoginMode 
+            ? { email, password }
+            : { email, password, full_name: fullName };
 
-                if (!response.ok) throw new Error('Ошибка авторизации');
-                
-                const data = await response.json();
-                localStorage.setItem('token', data.access_token);
-                
-                authModal.style.display = 'none';
-                fetchUserProfile(data.access_token);
-                
-                // Очистить форму
-                document.getElementById('email').value = '';
-                document.getElementById('password').value = '';
-                
-            } catch (error) {
-                alert('Ошибка: ' + error.message);
-            }
-        });
-    }
+        try {
+            const res = await fetch(`${API_URL}${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (!res.ok) throw new Error('Ошибка авторизации');
+            
+            const data = await res.json();
+            localStorage.setItem('token', data.access_token);
+            
+            authModal.style.display = 'none';
+            demoBanner.style.display = 'none';
+            await fetchUserProfile(data.access_token);
+            
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            fullNameInput.value = '';
+            fullNameInput.style.display = 'none';
+            
+        } catch (err) {
+            alert('Ошибка: ' + err.message);
+        }
+    });
 
     // Выход
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
+    logoutBtn?.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        currentUser = null;
+        updateUI();
+    });
+
+    // Получение профиля
+    async function fetchUserProfile(token) {
+        try {
+            const res = await fetch(`${API_URL}/auth/me`, { 
+                headers: { 'Authorization': `Bearer ${token}` } 
+            });
+            if (!res.ok) throw new Error('Profile error');
+            currentUser = await res.json();
+            updateUI();
+        } catch {
             localStorage.removeItem('token');
             currentUser = null;
             updateUI();
-        });
-    }
-
-    // Получение профиля пользователя
-    async function fetchUserProfile(token) {
-        try {
-            const response = await fetch(`${API_URL}/auth/me`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            
-            if (!response.ok) throw new Error('Не удалось загрузить профиль');
-            
-            currentUser = await response.json();
-            updateUI();
-            
-        } catch (error) {
-            console.error('Ошибка профиля:', error);
-            localStorage.removeItem('token');
         }
     }
 
@@ -322,155 +679,149 @@
     function updateUI() {
         if (currentUser) {
             userEmail.textContent = currentUser.email;
-            reportsLeft.textContent = `📊 ${currentUser.reports_left} из 10`;
+            reportsLeft.textContent = `📊 ${currentUser.reports_left} из ${currentUser.reports_limit}`;
             authBtn.style.display = 'none';
             logoutBtn.style.display = 'block';
+            demoBanner.style.display = 'none';
+            
+            // Подсвечиваем текущий тариф
+            document.querySelectorAll('.pricing-card').forEach(card => {
+                if (card.dataset.tariff === currentUser.tariff) {
+                    card.style.border = '2px solid #667eea';
+                }
+            });
         } else {
             userEmail.textContent = '';
             reportsLeft.textContent = '';
             authBtn.style.display = 'block';
             logoutBtn.style.display = 'none';
+            
+            if (!trialUsed) {
+                demoBanner.style.display = 'flex';
+            }
         }
     }
 
-    // === ЗАГРУЗКА ФАЙЛОВ ===
+    // Загрузка файла
+    async function handleFileUpload(file) {
+        if (isUploading) return;
+
+        const token = localStorage.getItem('token');
+        
+        // Если нет токена и пробный доступ не использован - используем пробный
+        if (!token && !trialUsed) {
+            useTrial();
+            return;
+        }
+
+        if (!token) {
+            alert('Сначала войдите в систему');
+            authModal.style.display = 'flex';
+            return;
+        }
+
+        // Валидация
+        if (file.size > 10 * 1024 * 1024) {
+            showStatus("❌ Файл больше 10 МБ", "#d32f2f");
+            return;
+        }
+        
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['csv', 'xlsx', 'xml'].includes(ext)) {
+            showStatus("❌ Неподдерживаемый формат", "#d32f2f");
+            return;
+        }
+
+        sessionStorage.removeItem('celma_file_id');
+        sessionStorage.removeItem('celma_analytics');
+
+        isUploading = true;
+        showStatus("📤 Загрузка...", "#2196F3");
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await fetch(`${API_URL}/upload/`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            if (res.status === 429) {
+                const error = await res.json();
+                alert(`Лимит исчерпан! ${error.message}`);
+                return;
+            }
+            
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            const data = await res.json();
+            sessionStorage.setItem('celma_file_id', data.file_id);
+            showStatus("✅ Файл загружен! Переход к анализу...", "#2E7D32");
+
+            setTimeout(() => {
+                window.location.href = "processing.html";
+            }, 800);
+
+        } catch (err) {
+            console.error('Upload error:', err);
+            showStatus("❌ Ошибка загрузки", "#d32f2f");
+        } finally {
+            isUploading = false;
+        }
+    }
+
+    function showStatus(text, color) {
+        if (uploadStatus) { 
+            uploadStatus.textContent = text; 
+            uploadStatus.style.color = color; 
+        }
+    }
+
+    // Инициализация загрузки
     function initFileUpload() {
         if (!uploadCard || !fileInput) return;
 
-        // Блокировка всех форм
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', (e) => e.preventDefault());
+        uploadCard.addEventListener('click', (e) => {
+            if (isUploading) return;
+            if (!e.target.closest('button') && e.target !== fileInput) fileInput.click();
         });
 
-        // Клик по карточке
-        uploadCard.addEventListener("click", (e) => {
-            if (e.target !== browseBtn && e.target !== fileInput) {
-                fileInput.click();
+        browseBtn?.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!isUploading) fileInput.click();
+        });
+
+        uploadCard.addEventListener('dragover', (e) => { 
+            e.preventDefault(); 
+            if (!isUploading) uploadCard.classList.add('dragover'); 
+        });
+        
+        uploadCard.addEventListener('dragleave', (e) => { 
+            e.preventDefault(); 
+            uploadCard.classList.remove('dragover'); 
+        });
+        
+        uploadCard.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadCard.classList.remove('dragover');
+            if (!isUploading && e.dataTransfer.files?.length) {
+                handleFileUpload(e.dataTransfer.files[0]);
             }
         });
 
-        if (browseBtn) {
-            browseBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                fileInput.click();
-            });
-        }
-
-        // Drag & Drop
-        uploadCard.addEventListener("dragover", (e) => {
+        fileInput.addEventListener('change', (e) => {
             e.preventDefault();
-            uploadCard.classList.add("dragover");
-        });
-        uploadCard.addEventListener("dragleave", (e) => {
-            e.preventDefault();
-            uploadCard.classList.remove("dragover");
-        });
-        uploadCard.addEventListener("drop", (e) => {
-            e.preventDefault();
-            uploadCard.classList.remove("dragover");
-            if (e.dataTransfer.files.length) {
-                handleFileWithToken(e.dataTransfer.files[0]);
-            }
-        });
-
-        fileInput.addEventListener("change", (e) => {
-            if (fileInput.files.length > 0) {
-                handleFileWithToken(fileInput.files[0]);
+            if (!isUploading && fileInput.files?.length) {
+                handleFileUpload(fileInput.files[0]);
             }
             fileInput.value = '';
         });
-
-        async function handleFileWithToken(file) {
-            const token = localStorage.getItem('token');
-            
-            // Проверка авторизации
-            if (!token) {
-                alert('Сначала войдите в систему');
-                authModal.style.display = 'flex';
-                return;
-            }
-
-            // Проверка размера
-            const maxSize = 10 * 1024 * 1024;
-            if (file.size > maxSize) {
-                showStatus("❌ Файл слишком большой. Максимум 10 МБ.", "#d32f2f");
-                return;
-            }
-
-            // Проверка формата
-            const allowed = ['.csv', '.xlsx', '.xml'];
-            const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-            if (!allowed.includes(ext)) {
-                showStatus("❌ Неподдерживаемый формат. Используйте .csv, .xlsx или .xml.", "#d32f2f");
-                return;
-            }
-
-            showStatus("📤 Загрузка файла...", "#2196F3");
-
-            try {
-                const formData = new FormData();
-                formData.append("file", file);
-
-                const uploadResponse = await fetch(`${API_URL}/upload/`, {
-                    method: "POST",
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: formData
-                });
-
-                if (uploadResponse.status === 401) {
-                    alert('Сессия истекла. Войдите снова.');
-                    localStorage.removeItem('token');
-                    authModal.style.display = 'flex';
-                    return;
-                }
-
-                if (uploadResponse.status === 429) {
-                    alert('Достигнут лимит отчетов на сегодня (10/10)');
-                    return;
-                }
-
-                if (!uploadResponse.ok) throw new Error(`Ошибка HTTP: ${uploadResponse.status}`);
-
-                const uploadResult = await uploadResponse.json();
-                const fileId = uploadResult.file_id;
-                console.log("✅ Файл загружен, ID:", fileId);
-
-                sessionStorage.setItem("celma_file_id", fileId);
-                showStatus("✅ Файл принят! Запускаем анализ...", "#2E7D32");
-
-                setTimeout(() => {
-                    window.location.href = "processing.html";
-                }, 500);
-
-            } catch (error) {
-                console.error("💥 Ошибка:", error);
-                if (confirm("Не удалось связаться с сервером. Использовать демо-режим?")) {
-                    const mockFileId = "demo_" + Date.now();
-                    sessionStorage.setItem("celma_file_id", mockFileId);
-                    showStatus("🧪 Демо-режим: файл не отправлен, но анализ будет показан", "#FF9800");
-                    setTimeout(() => {
-                        window.location.href = "processing.html";
-                    }, 800);
-                } else {
-                    showStatus("❌ " + error.message, "#d32f2f");
-                }
-            }
-        }
-
-        function showStatus(text, color) {
-            if (uploadStatus) {
-                uploadStatus.textContent = text;
-                uploadStatus.style.color = color;
-            }
-        }
     }
 
-    // === ЗАПУСК ===
-    document.addEventListener("DOMContentLoaded", () => {
-        initSlider();
+    // Запуск
+    document.addEventListener('DOMContentLoaded', () => {
         initFileUpload();
     });
 })();

@@ -1,123 +1,22 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Header, UploadFile, File
+from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
+from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 import uuid
 import os
-import hashlib
-import secrets
+import shutil
 
-# Конфигурация
-SECRET_KEY = "celma-super-secret-key-2026-change-in-production"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 часа
+from app import models, database
+from app.database import SessionLocal, engine
 
-# Функции для работы с паролями (без bcrypt/passlib)
-def get_password_hash(password: str) -> str:
-    """Простое хэширование пароля"""
-    salt = secrets.token_hex(16)
-    hash_obj = hashlib.sha256((salt + password).encode())
-    return f"{salt}:{hash_obj.hexdigest()}"
+# Создаем таблицы
+models.Base.metadata.create_all(bind=engine)
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Проверка пароля"""
-    try:
-        salt, hash_value = hashed_password.split(':')
-        hash_obj = hashlib.sha256((salt + plain_password).encode())
-        return hash_obj.hexdigest() == hash_value
-    except:
-        return False
-
-# Модели данных
-class User(BaseModel):
-    id: str
-    email: str
-    hashed_password: str
-    reports_today: int = 0
-    last_reset: datetime = datetime.utcnow()
-    created_at: datetime = datetime.utcnow()
-
-class UserCreate(BaseModel):
-    email: EmailStr
-    password: str
-
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-# Временное хранилище (в памяти)
-users_db = {}
-
-# JWT функции
-def create_access_token(data: dict):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-def decode_token(token: str):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
-    except JWTError:
-        return None
-
-# Получение текущего пользователя
-async def get_current_user(authorization: Optional[str] = Header(None)):
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated"
-        )
-    
-    parts = authorization.split()
-    if len(parts) != 2 or parts[0].lower() != "bearer":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization header"
-        )
-    
-    token = parts[1]
-    payload = decode_token(token)
-    
-    if not payload or "sub" not in payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
-        )
-    
-    user_id = payload["sub"]
-    user = users_db.get(user_id)
-    
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found"
-        )
-    
-    return user
-
-# Проверка лимита отчетов
-def check_report_limit(user: User):
-    if datetime.utcnow() - user.last_reset > timedelta(days=1):
-        user.reports_today = 0
-        user.last_reset = datetime.utcnow()
-    
-    if user.reports_today >= 10:
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Daily report limit exceeded (10 reports per day)"
-        )
-    return user
-
-# Создаем приложение
 app = FastAPI(title="CELMA API")
 
 # CORS
@@ -129,141 +28,148 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Эндпоинты аутентификации
-@app.post("/auth/register", response_model=Token)
-async def register(user_data: UserCreate):
-    # Проверяем уникальность email
-    for user in users_db.values():
-        if user.email == user_data.email:
-            raise HTTPException(status_code=400, detail="Email already registered")
-    
-    # Создаем пользователя
-    user_id = str(uuid.uuid4())
-    hashed_password = get_password_hash(user_data.password)
-    
-    user = User(
-        id=user_id,
-        email=user_data.email,
-        hashed_password=hashed_password
-    )
-    
-    users_db[user_id] = user
-    access_token = create_access_token({"sub": user_id})
-    
-    return {"access_token": access_token, "token_type": "bearer"}
-
-@app.post("/auth/login", response_model=Token)
-async def login(user_data: UserLogin):
-    # Ищем пользователя
-    user = None
-    for u in users_db.values():
-        if u.email == user_data.email:
-            user = u
-            break
-    
-    if not user or not verify_password(user_data.password, user.hashed_password):
-        raise HTTPException(status_code=400, detail="Incorrect email or password")
-    
-    access_token = create_access_token({"sub": user.id})
-    return {"access_token": access_token, "token_type": "bearer"}
-
-@app.get("/auth/me")
-async def get_my_profile(current_user: User = Depends(get_current_user)):
-    if datetime.utcnow() - current_user.last_reset > timedelta(days=1):
-        current_user.reports_today = 0
-        current_user.last_reset = datetime.utcnow()
-    
-    return {
-        "id": current_user.id,
-        "email": current_user.email,
-        "reports_today": current_user.reports_today,
-        "reports_left": max(0, 10 - current_user.reports_today),
-        "created_at": current_user.created_at.isoformat()
-    }
+# Конфигурация
+SECRET_KEY = "celma-super-secret-key-2026"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 30  # 30 дней
 
 # Папка для загрузки файлов
 UPLOAD_DIR = "storage"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Эндпоинт загрузки с проверкой лимита
+# Хэширование
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Модели Pydantic
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: Optional[str] = None
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    user: dict
+
+# Вспомогательные функции
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# Эндпоинты
+@app.post("/auth/register", response_model=Token)
+async def register(user_data: UserCreate, db: Session = Depends(get_db)):
+    # Проверяем, существует ли пользователь
+    db_user = db.query(models.User).filter(models.User.email == user_data.email).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email уже зарегистрирован")
+    
+    # Создаем нового пользователя
+    user = models.User(
+        id=str(uuid.uuid4()),
+        email=user_data.email,
+        hashed_password=get_password_hash(user_data.password),
+        full_name=user_data.full_name,
+        reports_limit=1,  # Free тариф
+        reports_reset_date=datetime.utcnow()
+    )
+    
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    
+    access_token = create_access_token({"sub": user.id})
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "full_name": user.full_name,
+            "tariff": user.tariff,
+            "reports_left": user.reports_limit - user.reports_count,
+            "reports_limit": user.reports_limit
+        }
+    }
+
+@app.post("/auth/login", response_model=Token)
+async def login(user_data: UserLogin, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.email == user_data.email).first()
+    
+    if not user or not verify_password(user_data.password, user.hashed_password):
+        raise HTTPException(status_code=400, detail="Неверный email или пароль")
+    
+    # Обновляем last_login
+    user.last_login = datetime.utcnow()
+    db.commit()
+    
+    access_token = create_access_token({"sub": user.id})
+    
+    # Сброс счетчика если прошло больше месяца
+    if datetime.utcnow() - user.reports_reset_date > timedelta(days=30):
+        user.reports_count = 0
+        user.reports_reset_date = datetime.utcnow()
+        db.commit()
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "full_name": user.full_name,
+            "tariff": user.tariff,
+            "reports_left": user.reports_limit - user.reports_count,
+            "reports_limit": user.reports_limit
+        }
+    }
+
 @app.post("/upload/")
 async def upload_file(
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
-    # Проверяем лимит
-    check_report_limit(current_user)
+    # Проверка токена через заголовок Authorization
+    # (в реальном проекте нужно добавить middleware)
     
     try:
         file_id = str(uuid.uuid4())
-        file_extension = file.filename.split(".")[-1] if "." in file.filename else "bin"
-        file_name = f"{file_id}.{file_extension}"
-        file_path = os.path.join(UPLOAD_DIR, file_name)
+        ext = file.filename.split('.')[-1]
+        filename = f"{file_id}.{ext}"
+        filepath = os.path.join(UPLOAD_DIR, filename)
         
         content = await file.read()
-        with open(file_path, "wb") as buffer:
-            buffer.write(content)
+        with open(filepath, "wb") as f:
+            f.write(content)
         
         return {
             "file_id": file_id,
             "filename": file.filename,
-            "saved_as": file_name,
             "size": len(content)
         }
-        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Ошибка загрузки файла: {str(e)}")
-
-# Эндпоинт аналитики с проверкой лимита и увеличением счетчика
-@app.post("/analytics/{file_id}")
-async def get_analytics(
-    file_id: str,
-    current_user: User = Depends(get_current_user)
-):
-    # Проверяем лимит
-    check_report_limit(current_user)
-    
-    try:
-        # Ищем файл
-        files = os.listdir(UPLOAD_DIR)
-        file_name = None
-        for f in files:
-            if f.startswith(file_id):
-                file_name = f
-                break
-        
-        if not file_name:
-            raise HTTPException(status_code=404, detail="File not found")
-        
-        file_path = os.path.join(UPLOAD_DIR, file_name)
-        
-        # Увеличиваем счетчик
-        current_user.reports_today += 1
-        
-        # Базовая аналитика
-        result = {
-            "file_id": file_id,
-            "filename": file_name,
-            "rows": 100,
-            "columns": ["date", "sales", "profit", "category"],
-            "summary": {
-                "numeric_columns": ["sales", "profit"],
-                "categorical_columns": ["date", "category"],
-            },
-            "preview": [
-                {"date": "2026-01-01", "sales": 1000, "profit": 200, "category": "A"},
-                {"date": "2026-01-02", "sales": 1500, "profit": 300, "category": "B"},
-            ],
-            "reports_left": 10 - current_user.reports_today,
-            "reports_today": current_user.reports_today
-        }
-        
-        print(f"✅ Файл проанализирован: {file_name}")
-        return result
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Ошибка анализа: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/")
 async def root():
-    return {"message": "CELMA API is running", "status": "ok"}
+    return {"message": "CELMA API работает!", "status": "ok"}

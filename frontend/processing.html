@@ -132,6 +132,15 @@
             color: #555;
             font-style: italic;
         }
+
+        .error-message {
+            color: #d32f2f;
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(211, 47, 47, 0.1);
+            border-radius: 8px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -169,109 +178,178 @@
         </div>
         
         <div class="status-text" id="statusText">Инициализация...</div>
+        <div class="error-message" id="errorMessage"></div>
     </div>
 </section>
 
 <script>
-    (function() {
-        document.addEventListener("DOMContentLoaded", () => {
-            // ⚠️ ЗАМЕНИТЕ НА ВАШ АКТУАЛЬНЫЙ API_URL
-            const API_URL = "https://friendly-halibut-rjpgrj4pvqq24g4-8000.app.github.dev";
-            const fileId = sessionStorage.getItem('celma_file_id');
-            const mainTitle = document.getElementById('main-title');
-            const statusText = document.getElementById('statusText');
+(function() {
+    // Конфигурация
+    const API_URL = "https://friendly-halibut-rjpgrj4pvqq24g4-8000.app.github.dev";
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 1000;
+    
+    document.addEventListener("DOMContentLoaded", async () => {
+        const token = localStorage.getItem('token');
+        const fileId = sessionStorage.getItem('celma_file_id');
+        
+        const mainTitle = document.getElementById('main-title');
+        const statusText = document.getElementById('statusText');
+        const errorMessage = document.getElementById('errorMessage');
+        const progressFill = document.getElementById('progressFill');
 
-            if (!fileId) {
-                mainTitle.textContent = "❌ Ошибка: нет данных для анализа";
-                statusText.textContent = "Вы не загрузили файл. Перенаправление...";
-                setTimeout(() => window.location.href = 'addFile.html', 3000);
-                return;
-            }
+        // Проверка авторизации
+        if (!token) {
+            showError('Не авторизованы. Перенаправление...');
+            setTimeout(() => window.location.href = 'addFile.html', 2000);
+            return;
+        }
 
-            console.log("🧠 Анализ для file_id:", fileId);
+        if (!fileId) {
+            showError('Нет файла для анализа. Перенаправление...');
+            setTimeout(() => window.location.href = 'addFile.html', 2000);
+            return;
+        }
 
-            let analyticsData = null;
-            let analyticsError = null;
+        console.log("🧠 Анализ для file_id:", fileId);
+        console.log("🔑 Токен:", token ? "есть" : "нет");
 
-            // Запрос к API
-            fetch(`${API_URL}/analytics/${fileId}`, { method: "POST" })
-                .then(response => {
-                    if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
-                    return response.json();
-                })
-                .then(data => {
+        // Очищаем старые данные перед новым анализом
+        sessionStorage.removeItem('celma_analytics');
+        
+        let analyticsData = null;
+        let analyticsError = null;
+        let retryCount = 0;
+
+        // Функция для показа ошибок
+        function showError(msg) {
+            errorMessage.style.display = 'block';
+            errorMessage.textContent = msg;
+            statusText.textContent = '❌ ' + msg;
+        }
+
+        // Функция запроса аналитики с повторными попытками
+        async function fetchAnalyticsWithRetry() {
+            while (retryCount < MAX_RETRIES) {
+                try {
+                    statusText.textContent = `Попытка анализа ${retryCount + 1}/${MAX_RETRIES}...`;
+                    
+                    const response = await fetch(`${API_URL}/analytics/${fileId}`, { 
+                        method: "POST",
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.status === 401) {
+                        throw new Error('Сессия истекла. Войдите снова');
+                    }
+                    
+                    if (response.status === 404) {
+                        // Файл еще не готов - ждем и пробуем снова
+                        statusText.textContent = 'Файл обрабатывается сервером...';
+                        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+                        retryCount++;
+                        continue;
+                    }
+                    
+                    if (!response.ok) {
+                        throw new Error(`Ошибка HTTP: ${response.status}`);
+                    }
+
+                    const data = await response.json();
                     console.log("📊 Данные аналитики получены:", data);
-                    analyticsData = data;
-                    if (!analyticsData.filename) analyticsData.filename = "Отчёт";
-                    sessionStorage.setItem('celma_analytics', JSON.stringify(analyticsData));
-                })
-                .catch(error => {
-                    console.error("💥 Ошибка получения аналитики:", error);
-                    analyticsError = error.message;
-                    statusText.textContent = "⚠️ Ошибка анализа, но мы покажем демо-данные";
-                    analyticsData = { 
-                        filename: "демо-файл", 
-                        summary: "Не удалось загрузить реальные данные. Показан пример.",
-                        charts: [],
-                        forecast: {}
+                    
+                    // Сохраняем данные
+                    analyticsData = {
+                        ...data,
+                        filename: data.filename || "Отчёт",
+                        timestamp: new Date().toISOString(),
+                        fileId: fileId
                     };
+                    
                     sessionStorage.setItem('celma_analytics', JSON.stringify(analyticsData));
-                });
+                    return true; // Успех
 
-            // Анимация шагов
-            const steps = [
-                { id: 'step1', text: 'Чтение строк и колонок...' },
-                { id: 'step2', text: 'Поиск сезонных трендов...' },
-                { id: 'step3', text: 'Расчет ключевых показателей (KPI)...' },
-                { id: 'step4', text: 'Генерация инсайтов...' }
-            ];
+                } catch (error) {
+                    console.error("💥 Ошибка получения аналитики:", error);
+                    
+                    if (error.message.includes('Сессия истекла')) {
+                        showError('Сессия истекла. Перенаправление...');
+                        localStorage.removeItem('token');
+                        setTimeout(() => window.location.href = 'addFile.html', 2000);
+                        return false;
+                    }
 
-            let currentStep = 0;
-            const progressFill = document.getElementById('progressFill');
-            const totalSteps = steps.length;
-
-            function runStep() {
-                if (currentStep < totalSteps) {
-                    document.querySelectorAll('.step-item').forEach(el => el.classList.remove('active'));
-                    const activeStep = document.getElementById(steps[currentStep].id);
-                    if (activeStep) activeStep.classList.add('active');
-                    statusText.textContent = steps[currentStep].text;
-                    progressFill.style.width = `${((currentStep + 1) / totalSteps) * 100}%`;
-                    currentStep++;
-                    setTimeout(runStep, 1200);
-                } else {
-                    statusText.textContent = "⏳ Завершаем анализ...";
-
-                    const waitForData = setInterval(() => {
-                        if (analyticsData !== null || analyticsError) {
-                            clearInterval(waitForData);
-                            if (analyticsError) {
-                                statusText.textContent = "❌ Ошибка анализа, но мы покажем демо";
-                            } else {
-                                statusText.textContent = "✅ Анализ завершён! Переход к результатам...";
-                            }
-                            progressFill.style.width = '100%';
-                            setTimeout(() => {
-                                window.location.href = 'dashboard.html';
-                            }, 800);
-                        }
-                    }, 200);
-
-                    setTimeout(() => {
-                        clearInterval(waitForData);
-                        if (!analyticsData && !analyticsError) {
-                            statusText.textContent = "⚠️ Тайм-аут, переходим к демо";
-                            analyticsData = { filename: "демо (тайм-аут)" };
-                            sessionStorage.setItem('celma_analytics', JSON.stringify(analyticsData));
-                            setTimeout(() => window.location.href = 'dashboard.html', 1000);
-                        }
-                    }, 5000);
+                    retryCount++;
+                    
+                    if (retryCount < MAX_RETRIES) {
+                        statusText.textContent = `Ошибка, повтор через ${RETRY_DELAY/1000}с...`;
+                        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+                    }
                 }
             }
+            
+            // Если все попытки неудачны - создаем демо-данные
+            analyticsData = { 
+                filename: "демо-файл", 
+                summary: "Не удалось загрузить реальные данные. Показан пример.",
+                charts: [],
+                forecast: {},
+                fileId: fileId,
+                isDemo: true
+            };
+            sessionStorage.setItem('celma_analytics', JSON.stringify(analyticsData));
+            return true;
+        }
 
-            setTimeout(runStep, 500);
-        });
-    })();
+        // Анимация шагов
+        const steps = [
+            { id: 'step1', text: 'Чтение строк и колонок...' },
+            { id: 'step2', text: 'Поиск сезонных трендов...' },
+            { id: 'step3', text: 'Расчет ключевых показателей (KPI)...' },
+            { id: 'step4', text: 'Генерация инсайтов...' }
+        ];
+
+        let currentStep = 0;
+        const totalSteps = steps.length;
+
+        // Запускаем анимацию и запрос параллельно
+        const analyticsPromise = fetchAnalyticsWithRetry();
+        
+        function runStep() {
+            if (currentStep < totalSteps) {
+                document.querySelectorAll('.step-item').forEach(el => el.classList.remove('active'));
+                const activeStep = document.getElementById(steps[currentStep].id);
+                if (activeStep) activeStep.classList.add('active');
+                statusText.textContent = steps[currentStep].text;
+                progressFill.style.width = `${((currentStep + 1) / totalSteps) * 100}%`;
+                currentStep++;
+                setTimeout(runStep, 1200);
+            } else {
+                statusText.textContent = "⏳ Завершаем анализ...";
+            }
+        }
+
+        setTimeout(runStep, 500);
+
+        // Ждем завершения анализа
+        const success = await analyticsPromise;
+        
+        if (success) {
+            statusText.textContent = analyticsData.isDemo 
+                ? "⚠️ Демо-режим: показаны примеры данных"
+                : "✅ Анализ завершён! Переход к результатам...";
+            
+            progressFill.style.width = '100%';
+            
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1000);
+        }
+    });
+})();
 </script>
 </body>
 </html>
