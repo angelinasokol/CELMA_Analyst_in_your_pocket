@@ -1,18 +1,21 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from app.config import settings
 import os
 
-# Создаем папку для базы данных если её нет
+# Создаем папку для базы данных
 os.makedirs("data", exist_ok=True)
 
+# SQLite для разработки
+SQLALCHEMY_DATABASE_URL = "sqlite:///./data/celma.db"
+
 engine = create_engine(
-    settings.DATABASE_URL,
-    connect_args={"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {}
+    SQLALCHEMY_DATABASE_URL, 
+    connect_args={"check_same_thread": False}
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 Base = declarative_base()
 
 def get_db():
