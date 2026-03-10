@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>CELMA — Вход / Регистрация</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FFF4E5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .auth-container {
+            max-width: 440px;
+            width: 100%;
+            background: white;
+            border-radius: 40px;
+            padding: 50px 40px;
+            box-shadow: 0 30px 60px rgba(255, 107, 53, 0.15);
+            border: 1px solid #FFD9B0;
+        }
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .auth-logo img {
+            height: 60px;
+        }
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #FFE0C0;
+        }
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            font-weight: 600;
+            font-size: 18px;
+            color: #C0A080;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+        .auth-tab.active {
+            color: #FF6B35;
+            border-bottom-color: #FF6B35;
+        }
+        .auth-form {
+            display: none;
+        }
+        .auth-form.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #5C4E3D;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #FFE0C0;
+            border-radius: 30px;
+            font-size: 16px;
+            transition: 0.2s;
+            background: #FFF9F0;
+        }
+        .form-group input:focus {
+            border-color: #FFD166;
+            outline: none;
+        }
+        .auth-btn {
+            width: 100%;
+            background: #FF8C42;
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 40px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 8px 20px rgba(255, 140, 66, 0.3);
+            margin-top: 10px;
+        }
+        .auth-btn:hover {
+            background: #FF6B35;
+            transform: translateY(-2px);
+        }
+        .auth-footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #8F7A66;
+        }
+        .auth-footer a {
+            color: #FF6B35;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+            color: #d32f2f;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #C0A080;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            color: #FF8C42;
+        }
+    </style>
+</head>
+<body>
+<div class="auth-container">
+    <div class="auth-logo">
+        <img src="images/logo-icon.png" alt="CELMA">
+    </div>
+
+    <div class="auth-tabs">
+        <div class="auth-tab active" data-tab="login">Вход</div>
+        <div class="auth-tab" data-tab="register">Регистрация</div>
+    </div>
+
+    <!-- Форма входа -->
+    <div class="auth-form active" id="login-form">
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="login-email" placeholder="your@email.ru" autocomplete="username">
+        </div>
+        <div class="form-group">
+            <label>Пароль</label>
+            <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <div class="error-message" id="login-error"></div>
+        <button class="auth-btn" id="login-btn">Войти</button>
+    </div>
+
+    <!-- Форма регистрации -->
+    <div class="auth-form" id="register-form">
+        <div class="form-group">
+            <label>Имя</label>
+            <input type="text" id="register-name" placeholder="Иван Иванов">
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="register-email" placeholder="your@email.ru" autocomplete="username">
+        </div>
+        <div class="form-group">
+            <label>Пароль</label>
+            <input type="password" id="register-password" placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <div class="error-message" id="register-error"></div>
+        <button class="auth-btn" id="register-btn">Зарегистрироваться</button>
+    </div>
+
+    <div class="auth-footer">
+        <a href="#" id="switch-to-register" style="display: none;">Нет аккаунта? Зарегистрироваться</a>
+        <a href="#" id="switch-to-login" style="display: none;">Уже есть аккаунт? Войти</a>
+    </div>
+
+    <a href="addFile.html" class="back-link">← Вернуться к загрузке</a>
+</div>
+
+<script>
+    (function() {
+        const API_URL = "https://friendly-halibut-rjpgrj4pvqq24g4-8000.app.github.dev";
+
+        // Элементы
+        const tabs = document.querySelectorAll('.auth-tab');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const switchToRegister = document.getElementById('switch-to-register');
+        const switchToLogin = document.getElementById('switch-to-login');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const loginError = document.getElementById('login-error');
+        const registerError = document.getElementById('register-error');
+
+        // Получаем returnUrl из query string
+        const urlParams = new URLSearchParams(window.location.search);
+        const returnUrl = urlParams.get('returnUrl') || 'addFile.html';
+
+        // Переключение табов
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                if (tab.dataset.tab === 'login') {
+                    loginForm.classList.add('active');
+                    registerForm.classList.remove('active');
+                } else {
+                    registerForm.classList.add('active');
+                    loginForm.classList.remove('active');
+                }
+            });
+        });
+
+        // Вход
+        loginBtn.addEventListener('click', async () => {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            loginError.style.display = 'none';
+
+            if (!email || !password) {
+                loginError.textContent = 'Заполните все поля';
+                loginError.style.display = 'block';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                if (!res.ok) {
+                    const err = await res.text();
+                    throw new Error(err || 'Ошибка входа');
+                }
+                const data = await res.json();
+                localStorage.setItem('token', data.access_token);
+                // Редирект на страницу, с которой пришли
+                window.location.href = returnUrl;
+            } catch (err) {
+                loginError.textContent = err.message;
+                loginError.style.display = 'block';
+            }
+        });
+
+        // Регистрация
+        registerBtn.addEventListener('click', async () => {
+            const name = document.getElementById('register-name').value.trim();
+            const email = document.getElementById('register-email').value.trim();
+            const password = document.getElementById('register-password').value;
+            registerError.style.display = 'none';
+
+            if (!name || !email || !password) {
+                registerError.textContent = 'Заполните все поля';
+                registerError.style.display = 'block';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, full_name: name })
+                });
+                if (!res.ok) {
+                    const err = await res.text();
+                    throw new Error(err || 'Ошибка регистрации');
+                }
+                const data = await res.json();
+                localStorage.setItem('token', data.access_token);
+                window.location.href = returnUrl;
+            } catch (err) {
+                registerError.textContent = err.message;
+                registerError.style.display = 'block';
+            }
+        });
+
+        // Ссылки-переключатели (на будущее, если понадобятся)
+        // Можно не использовать, но для полноты:
+        if (switchToRegister) {
+            switchToRegister.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelector('[data-tab="register"]').click();
+            });
+        }
+        if (switchToLogin) {
+            switchToLogin.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelector('[data-tab="login"]').click();
+            });
+        }
+    })();
+</script>
+</body>
+</html>
